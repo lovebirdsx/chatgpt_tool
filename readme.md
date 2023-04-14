@@ -17,12 +17,6 @@
 
 在用户目录下，创建`.chatgpt_tool`文件夹，然后在里面创建`config.json`文件，内容类似于：
 
-其中：
-
-- `proxy`是代理，根据你的代理来设定，类似于：socks5h://localhost:38888
-- `model`是模型，推荐`gpt-3.5-turbo`
-- `access_token`是你的令牌，可以在[这里](https://chat.openai.com/api/auth/session)获得
-
 ```json
 {
     "proxy": "your_proxy",
@@ -30,6 +24,13 @@
     "access_token": "your_access_token"
 }
 ```
+
+其中：
+
+- `proxy`是代理，根据你的代理来设定，类似于：socks5h://localhost:38888
+- `model`是模型，推荐`gpt-3.5-turbo`
+- `access_token`是你的令牌，可以在[这里](https://chat.openai.com/api/auth/session)获得
+
 
 ### 运行
 
