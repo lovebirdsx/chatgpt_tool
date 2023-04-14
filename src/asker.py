@@ -1,11 +1,20 @@
+import os
 import time
 import tiktoken
 
 from revChatGPT.V1 import Chatbot, configure
 
+from app import get_save_path
+
 TRUNK_TOKEN_SIZE = 2800
 TRUNK_STR_SIZE = 11500
 MAX_ASK_RETRY_COUNT = 10
+
+DEFAULT_CONFIG = {
+    'proxy': 'socks5h://localhost:38888',
+    'model': 'gpt-3.5-turbo',
+    'access_token': 'open https://chat.openai.com/api/auth/session to get your access_token'
+}
 
 class AskTimeoutException(Exception):
     pass
@@ -41,9 +50,9 @@ def ask_trunk_impl(bot: Chatbot, prompt_prefix: str, trunk: str, log_prefix = ''
     print(f'{log_prefix}提问: {prompt_prefix} 文本长度: {len(trunk)}\n')
     prev_text = ''
     for data in bot.ask(prompt_prefix + trunk):
-        message = data["message"][len(prev_text) :]
-        print(message, end="", flush=True)
-        prev_text = data["message"]
+        message = data['message'][len(prev_text) :]
+        print(message, end='', flush=True)
+        prev_text = data['message']
     
     print('\n-----------------------------------------------------------------')
     return prev_text
@@ -99,10 +108,23 @@ def format_result(result: list[str]) -> str:
     return '\n'.join(formated_result)
 
 
+def load_config() -> dict:
+    import json
+    path = get_save_path() + '/config.json'
+    if not os.path.exists(path):
+        os.makedirs(get_save_path(), exist_ok=True)
+        with open(path, 'w') as f:
+            json.dump(DEFAULT_CONFIG, f)
+            raise Exception(f'请先配置config.json, 位于: {path}')
+
+    with open(get_save_path() + '/config.json', 'r') as f:
+        return json.load(f)
+
+
 def do_ask_for_large_file_cmd(path: str, prompt: Prompt) -> str:
     with open(path, 'r') as f:
         code = f.read()
-        conf = configure()
+        conf = load_config()
         # print(conf)
         bot = Chatbot(conf)
         result = ask_for_content(bot, code, prompt)
