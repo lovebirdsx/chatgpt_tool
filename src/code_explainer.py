@@ -40,12 +40,7 @@ def create_args_parser() -> argparse.ArgumentParser:
     return parser
 
 def gen_explain_header(path: str) -> str:
-    lines = [
-        f'# {path}',
-        '',
-        f'[打开](file:///{path})'
-    ]
-    return '\n'.join(lines) + '\n'
+    return f'# {path}\n\n[打开](file:///{path})\n'
 
 def test() -> None:
     print('测试通过')

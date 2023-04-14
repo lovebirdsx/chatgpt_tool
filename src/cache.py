@@ -24,8 +24,7 @@ class Cache:
 
     def write(self, path: str, content: str) -> None:
         cache_path = self.get_cache_path(path)
-        if not os.path.exists(cache_path):
-            os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
 
         with open(cache_path, 'w') as f:
             f.write(content)

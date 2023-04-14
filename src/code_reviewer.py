@@ -62,24 +62,14 @@ def gen_patch(repo: git.Repo, file) -> str:
     return patch_path
 
 def gen_review_header(repo: git.Repo) -> str:
-    repo_name = os.path.basename(repo.working_dir)
-    branch_name = repo.active_branch.name
-    commit_message = repo.head.commit.message
+    commit_message = repo.head.commit.message.strip()
+    return f'''# 代码评审
 
-    lines = [
-        '# 代码评审',
-        '',
-        f'版本库：{repo_name}',
-        f'分支：{branch_name}',
-    ]
-
-    if not repo.is_dirty():
-        lines.append(f'提交信息：{commit_message.strip()}')
-        lines.append(f'提交者：{repo.head.commit.author}')
-    else:
-        lines.append('提交信息：(未提交)')
-
-    return '\n'.join(lines) + '\n'
+版本库：{os.path.basename(repo.working_dir)}
+分支：{repo.active_branch.name}
+提交信息：{"(未提交)" if repo.is_dirty() else commit_message}
+提交者：{"(未知)" if repo.is_dirty() else repo.head.commit.author}
+'''
     
 
 def test() -> None:
