@@ -15,16 +15,6 @@
             "justMyCode": true
         },
         {
-            "name": "code explain 2",
-            "type": "python",
-            "request": "launch",
-            "program": "code_explainer.py",
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/src",
-            "args": ["-c", "-f", "revChatGPT/V1.py"],
-            "justMyCode": true
-        },
-        {
             "name": "test code explain",
             "type": "python",
             "request": "launch",
@@ -32,6 +22,16 @@
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src",
             "args": ["-t"],
+            "justMyCode": true
+        },
+        {
+            "name": "code review",
+            "type": "python",
+            "request": "launch",
+            "program": "code_reviewer.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src",
+            "args": ["-f", "code_reviewer.py"],
             "justMyCode": true
         },
         {
