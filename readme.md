@@ -34,7 +34,7 @@
 
 ### 运行
 
-代码解释：`python code_explain.py`
+代码解释：`python code_explainer.py`
 代码审查：`python code_reviewer.py`
 
 执行后会有特定的命令行提示，按照提示操作即可。
