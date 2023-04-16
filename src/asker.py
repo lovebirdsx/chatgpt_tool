@@ -2,7 +2,7 @@ import os
 import time
 import tiktoken
 
-from revChatGPT.V1 import Chatbot, configure
+from revChatGPT.V1 import Chatbot
 
 from app import get_save_path
 
