@@ -7,7 +7,7 @@ from typing import NoReturn
 
 from revChatGPT.V1 import Chatbot
 from revChatGPT.utils import create_session, create_completer, get_input
-from revChatGPT.typings import colors, CLIError
+from revChatGPT.typings import colors, CLIError, ChatbotError
 
 from asker import load_config
 from json_config import JsonConfig
@@ -20,7 +20,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 save = JsonConfig('save.json')
 
-MAX_RETRIES = 10
+MAX_RETRIES = 5
 
 def try_chatbot(func: callable) -> callable:
     def wrapper(*args):
@@ -28,11 +28,15 @@ def try_chatbot(func: callable) -> callable:
             try:
                 return func(*args)
             except Exception as e:
-                print(f'Error:{e}')
-                print(f'\n[{i+1}/{MAX_RETRIES}] Retrying in 3 seconds')
-                time.sleep(3)
-        raise CLIError(f'Retries exceeded {MAX_RETRIES}')
-
+                print(f'{C.FAIL}Error [{i+1}/{MAX_RETRIES}]{C.ENDC}:{e}')
+                if i < MAX_RETRIES - 1:
+                    print(f'\nRetrying in 3 seconds...\n')
+                    time.sleep(3)
+        
+        time.sleep(0.5)
+        print('')
+        print(f'{C.BOLD}{C.FAIL}Error: Failed to retry {MAX_RETRIES} times{C.ENDC}')
+    
     return wrapper
 
 
@@ -52,7 +56,7 @@ class Commands:
         self.commands.append(CommandItem(name, help, func))
 
     def get_help(self) -> str:
-        return '\n'.join([f'\t{item.name} - {item.help}' for item in self.commands])
+        return '\n'.join([f'{C.OKCYAN}{item.name:<20}{C.ENDC}{item.help}' for item in self.commands])
 
     def get_names(self) -> list[str]:
         return [item.name for item in self.commands]
@@ -80,12 +84,12 @@ def main(config: dict) -> NoReturn:
 
     def new_conversation(args: list[str]):
         chatbot.reset_chat()
-        print('New conversation started.')
+        print(f'{C.OKCYAN}New conversation started.{C.ENDC}')
 
     @try_chatbot
     def list_conversations(args: list[str]):
         for conv in chatbot.get_conversations(limit=100):
-            print(f'{conv.get("title")} - {conv.get("id")}')
+            print(f'{conv.get("id")}: {C.OKCYAN}{conv.get("title")}{C.ENDC}')
 
     @try_chatbot
     def delete_conversation(args: list[str]):
@@ -95,8 +99,8 @@ def main(config: dict) -> NoReturn:
             conversation_id = chatbot.conversation_id
         
         if not conversation_id:
-            print('No conversation to delete.')
-            return True
+            print(f'{C.WARNING}No conversation to delete.{C.ENDC}')
+            return
 
         chatbot.delete_conversation(conversation_id)
         print(f'session [{conversation_id}] successfully delete.')
@@ -107,6 +111,10 @@ def main(config: dict) -> NoReturn:
             save.save()
 
     def rollback(args: list[str]):
+        if chatbot.conversation_id is None:
+            print(f'{C.WARNING}No conversation to rollback.{C.ENDC}')
+            return
+
         try:
             rollback = int(args[1])
         except IndexError:
@@ -127,13 +135,14 @@ def main(config: dict) -> NoReturn:
             save.save()
             show_msgs([])
         except IndexError:
-            print('Please include conversation UUID in command')
+            print(f'{C.WARNING}Please include conversation UUID in command{C.ENDC}')
 
     @try_chatbot
     def show_msgs(args: list[str]):
         if chatbot.conversation_id is None:
-            print('No conversation to show messages.')
-            return True
+            print(f'{C.WARNING}No conversation to show messages.{C.ENDC}')
+            return
+        
         history = chatbot.get_msg_history(chatbot.conversation_id, 'utf-8')
         print(f'{C.OKCYAN + C.BOLD}Title: {history["title"]}{C.ENDC}\n')
 
@@ -146,9 +155,11 @@ def main(config: dict) -> NoReturn:
                 continue
 
             if msg['author']['role'] == 'assistant':
-                print(f'{C.OKBLUE}You:{C.ENDC}\n{text}\n')
+                print(f'{C.OKGREEN}ChatGPT:{C.ENDC}\n{text}')
             elif msg['author']['role'] == 'user':
-                print(f'{C.OKGREEN}ChatGPT:{C.ENDC}\n{text}\n')
+                print(f'{C.OKBLUE}You:{C.ENDC}\n{text}')
+            
+            print('')
             
     
     def show_config(args: list[str]):
@@ -175,11 +186,11 @@ def main(config: dict) -> NoReturn:
     @try_chatbot
     def change_title(args: list[str]):
         if chatbot.conversation_id is None:
-            print('No conversation to change title.')
+            print(f'{C.WARNING}No conversation to change title.{C.ENDC}')
             return True
         
         if len(args) == 1:
-            print('No title specified.')
+            print(f'{C.WARNING}No title specified.{C.ENDC}')
             return True
 
         chatbot.change_title(chatbot.conversation_id, args[1])
@@ -212,13 +223,13 @@ def main(config: dict) -> NoReturn:
 def run_cli(chatbot: Chatbot, commands: Commands):
     session = create_session()
     completer = create_completer(commands.get_names())
-    print()
     try:
         while True:
             print(f'{C.OKBLUE + C.BOLD}You: {C.ENDC}')
 
             prompt = get_input(session=session, completer=completer)
             if commands.handle(prompt):
+                print()
                 continue
 
             print()
@@ -265,11 +276,11 @@ def load_cmd_config() -> dict:
 
 
 WELCOME_MESSAGE = f'''
-    ChatGPT Command Tool (https://chat.openai.com/chat)
+{C.OKGREEN}ChatGPT Command Tool{C.ENDC} (https://chat.openai.com/chat)
 
-    !help       -> Show All Commands
-    Esc, Enter  -> send message
-    Alt+Enter   -> send message
+{C.OKCYAN}!help{C.ENDC}       Show All Commands
+{C.OKCYAN}Esc, Enter{C.ENDC}  send message
+{C.OKCYAN}Alt+Enter{C.ENDC}   send message
 '''
 
 if __name__ == '__main__':
