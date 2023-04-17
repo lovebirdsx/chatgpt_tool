@@ -11,8 +11,7 @@
             "program": "code_explainer.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src",
-            "args": ["-c", "-f", "code_explainer.py"],
-            "justMyCode": true
+            "args": ["-c", "-f", "code_explainer.py"]
         },
         {
             "name": "test code explain",
@@ -21,8 +20,7 @@
             "program": "code_explainer.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src",
-            "args": ["-t"],
-            "justMyCode": true
+            "args": ["-t"]
         },
         {
             "name": "code review",
@@ -31,8 +29,7 @@
             "program": "code_reviewer.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src",
-            "args": ["-f", "code_reviewer.py"],
-            "justMyCode": true
+            "args": ["-f", "code_reviewer.py"]
         },
         {
             "name": "test code review",
@@ -41,8 +38,16 @@
             "program": "code_reviewer.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src",
-            "args": ["-t"],
-            "justMyCode": true
+            "args": ["-t"]
+        },
+        {
+            "name": "command line",
+            "type": "python",
+            "request": "launch",
+            "program": "cli.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src",
+            "args": ["-m", "3.5"]
         }
     ]
 }
