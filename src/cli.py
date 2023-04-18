@@ -131,7 +131,7 @@ def main(config: dict) -> NoReturn:
 
             conversation_id = cache.get_id(index)
             chatbot.conversation_id = conversation_id
-            print(f'Conversation successfully set to {conversation_id}.\n')
+            print(f'Conversation successfully set to [{cache.get_title(index)}].\n')
             save.set('conversation_id', conversation_id)
             save.save()
             show_msgs([])
