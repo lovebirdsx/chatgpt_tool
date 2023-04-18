@@ -1,6 +1,7 @@
 # Chatgpt工具
 
-可以用来解释和审查代码的工具，支持大文件。
+- 可以用来解释和审查代码的工具，支持大文件
+- ChatGPT命令行工具，可以通过命令行来调用ChatGPT
 
 ## 要求
 
@@ -14,7 +15,8 @@
 **注意**
 
 由于通过access_token来调用网页版是非官方的做法，所以可能会出现访问不了的情况，一般可以通过如下方式来解决：
-`python -m pip install --upgrade revChatGPT`
+`python -m pip install --upgrade revChatGPT --isolated`
+加入`--isolated`参数来解决可能出现的非官方软件源问题
 具体请关注[这里](https://github.com/acheong08/ChatGPT)
 
 ## 使用
@@ -40,8 +42,9 @@
 
 ### 运行
 
-代码解释：`python code_explainer.py`
-代码审查：`python code_reviewer.py`
+代码解释：`python code_explainer.py -h`
+代码审查：`python code_reviewer.py -h`
+命令行工具：`python cli.py -h`
 
 执行后会有特定的命令行提示，按照提示操作即可。
 

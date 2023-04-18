@@ -7,12 +7,12 @@ from typing import NoReturn
 
 from revChatGPT.V1 import Chatbot
 from revChatGPT.utils import create_session, create_completer, get_input
-from revChatGPT.typings import colors, CLIError, ChatbotError
+from revChatGPT.typings import CLIError, Colors
 
 from asker import load_config
 from json_config import JsonConfig
 
-C = colors()
+C = Colors()
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s',
 )
