@@ -10,6 +10,8 @@ from revChatGPT.utils import create_session, create_completer, get_input
 from revChatGPT.typings import CLIError, Colors
 
 from asker import load_config
+from commands import Commands
+from conversation_cache import ConversationCache
 from json_config import JsonConfig
 
 C = Colors()
@@ -39,40 +41,17 @@ def try_chatbot(func: callable) -> callable:
     
     return wrapper
 
+_cache: ConversationCache = None
+def get_conversation_cache(chatbot: Chatbot) -> ConversationCache:
+    global _cache
+    if _cache is None:
+        _cache = ConversationCache(chatbot.get_conversations(limit=100))
+    return _cache
 
-class CommandItem:
-    def __init__(self, name: str, help: str, func: callable):
-        self.name = name
-        self.help = help
-        self.func = func
 
-
-class Commands:
-    def __init__(self):
-        self.commands = []
-        self.add('!help', 'Show this message', lambda _: print(self.get_help()))
-
-    def add(self, name: str, help: str, func: callable):
-        self.commands.append(CommandItem(name, help, func))
-
-    def get_help(self) -> str:
-        return '\n'.join([f'{C.OKCYAN}{item.name:<20}{C.ENDC}{item.help}' for item in self.commands])
-
-    def get_names(self) -> list[str]:
-        return [item.name for item in self.commands]
-
-    def handle(self, command: str) -> bool:
-        command = command.strip()
-        if command.startswith('!'):
-            command = command.lower()
-
-        args = command.split(' ')
-        command_name = args[0]
-        for item in self.commands:
-            if item.name == command_name:
-                item.func(args)
-                return True
-        return False
+def clear_conversation_cache():
+    global _cache
+    _cache = None
 
 
 def main(config: dict) -> NoReturn:
@@ -88,13 +67,31 @@ def main(config: dict) -> NoReturn:
 
     @try_chatbot
     def list_conversations(args: list[str]):
-        for conv in chatbot.get_conversations(limit=100):
-            print(f'{conv.get("id")}: {C.OKCYAN}{conv.get("title")}{C.ENDC}')
+        if len(args) == 2:
+            if args[1] == '-s':
+                clear_conversation_cache()
+
+        cache = get_conversation_cache(chatbot)
+        titles = cache.titles()
+        for i, title in enumerate(titles):
+            print(f'{i:<3}: {C.OKCYAN}{title}{C.ENDC}')
 
     @try_chatbot
     def delete_conversation(args: list[str]):
+        cache = get_conversation_cache(chatbot)
+        index = 0
         if len(args) == 2:
-            conversation_id = args[1]
+            try:
+                index = int(args[1])
+            except ValueError:
+                print(f'{C.WARNING}Invalid index.{C.ENDC}')
+                return
+            
+            if not cache.exist(index):
+                print(f'{C.WARNING}Invalid index.{C.ENDC}')
+                return
+            
+            conversation_id = cache.get_id(index)
         else:
             conversation_id = chatbot.conversation_id
         
@@ -103,7 +100,9 @@ def main(config: dict) -> NoReturn:
             return
 
         chatbot.delete_conversation(conversation_id)
-        print(f'session [{conversation_id}] successfully delete.')
+        title = cache.get_title(index)
+        cache.delete(index)
+        print(f'session [{title}] successfully delete.')
 
         if conversation_id == chatbot.conversation_id:
             chatbot.conversation_id = None
@@ -118,17 +117,19 @@ def main(config: dict) -> NoReturn:
         try:
             rollback = int(args[1])
         except IndexError:
-            logging.exception(
-                'No number specified, rolling back 1 message',
-                stack_info=True,
-            )
             rollback = 1
         chatbot.rollback_conversation(rollback)
         print(f'Rolled back {rollback} messages.')
     
     def set_conversation(args: list[str]):
         try:
-            conversation_id = args[1]
+            index = int(args[1])
+            cache = get_conversation_cache(chatbot)
+            if not cache.exist(index):
+                print(f'{C.WARNING}Invalid index.{C.ENDC}')
+                return
+
+            conversation_id = cache.get_id(index)
             chatbot.conversation_id = conversation_id
             print(f'Conversation successfully set to {conversation_id}.\n')
             save.set('conversation_id', conversation_id)
@@ -170,17 +171,23 @@ def main(config: dict) -> NoReturn:
     def delete_none_title_conversations(args: list[str]):
         print('Deleting all conversations without title...')
         count = 0
-        for conv in chatbot.get_conversations(limit=100):
-            if conv.get('title') == 'New chat':
-                conversation_id = conv.get('id')
-                chatbot.delete_conversation(conversation_id)
-                print(f'session [{conversation_id}] successfully delete.')
-                if conversation_id == chatbot.conversation_id:
-                    chatbot.conversation_id = None
-                    save.set('conversation_id', None)
-                    save.save()
+        cache = get_conversation_cache(chatbot)
+        
+        conversations = [conv for conv in cache.conversations if conv.get('title') == 'New chat']
+        for conv in conversations:
+            id = conv.get('id')
+            chatbot.delete_conversation(id)
+            index = cache.get_index(id)
+            title = cache.get_title(index)
+            cache.delete(index)
+            print(f'session [{title}] successfully delete.')
+            count += 1
 
-                count += 1
+            if id == chatbot.conversation_id:
+                chatbot.conversation_id = None
+                save.set('conversation_id', None)
+                save.save()
+                
         print(f'{count} conversations deleted.')
     
     @try_chatbot
@@ -247,7 +254,7 @@ def run_cli(chatbot: Chatbot, commands: Commands):
 
 
 @try_chatbot
-def ask(chatbot, prompt):
+def ask(chatbot: Chatbot, prompt):
     prev_text = ''
     for data in chatbot.ask(prompt, auto_continue=True):
         message = data['message'][len(prev_text):]
@@ -255,6 +262,14 @@ def ask(chatbot, prompt):
         prev_text = data['message']
     save.set('conversation_id', chatbot.conversation_id)
     save.save()
+
+    cache = get_conversation_cache(chatbot)
+    if cache.get_index(chatbot.conversation_id) == -1:
+        conversation = {
+            'id': chatbot.conversation_id,
+            'title': 'New chat'
+        }
+        cache.add(conversation)
 
 
 def parse_args() -> argparse.Namespace:

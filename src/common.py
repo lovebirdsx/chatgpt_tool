@@ -1,6 +1,5 @@
 import os
 
-
 def write_file(path: str, content: str) -> None:
     dir = os.path.dirname(path)
     if dir and not os.path.exists(dir):
