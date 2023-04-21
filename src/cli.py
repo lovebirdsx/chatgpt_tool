@@ -131,7 +131,7 @@ def main(config: dict) -> NoReturn:
 
             conversation_id = cache.get_id(index)
             chatbot.conversation_id = conversation_id
-            print(f'Conversation successfully set to [{cache.get_title(index)}].\n')
+            print(f'Conversation successfully set to {C.OKCYAN}{cache.get_title(index)}{C.ENDC}.\n')
             save.set('conversation_id', conversation_id)
             save.save()
             show_msgs([])
@@ -180,7 +180,7 @@ def main(config: dict) -> NoReturn:
             index = cache.get_index(id)
             title = cache.get_title(index)
             cache.delete(index)
-            print(f'session [{title}] successfully delete.')
+            print(f'session {C.OKCYAN}{title}{C.ENDC} successfully delete.')
             count += 1
 
             if id == chatbot.conversation_id:
