@@ -102,7 +102,7 @@ def main(config: dict) -> NoReturn:
         chatbot.delete_conversation(conversation_id)
         title = cache.get_title(index)
         cache.delete(index)
-        print(f'session [{title}] successfully delete.')
+        print(f'session {C.OKCYAN}{title}{C.ENDC} successfully delete.')
 
         if conversation_id == chatbot.conversation_id:
             chatbot.conversation_id = None
@@ -200,8 +200,13 @@ def main(config: dict) -> NoReturn:
             print(f'{C.WARNING}No title specified.{C.ENDC}')
             return True
 
-        chatbot.change_title(chatbot.conversation_id, args[1])
-        print(f'Conversation title successfully changed to {args[1]}.')
+        title = ' '.join(args[1:])
+        cache = get_conversation_cache(chatbot)
+        chatbot.change_title(chatbot.conversation_id, title)
+        index = cache.get_index(chatbot.conversation_id)
+        cache.set_title(index, title)
+
+        print(f'Conversation title successfully changed to {C.OKCYAN}{title}{C.ENDC}.')
 
     commands = Commands()
     commands.add('!new', 'Start new conversation', new_conversation)

@@ -19,6 +19,9 @@ class ConversationCache:
 
     def get_title(self, index: int) -> str:
         return self.conversations[index].get('title')
+    
+    def set_title(self, index: int, title: str):
+        self.conversations[index]['title'] = title
 
     def get_index(self, conversation_id: str) -> int:
         for i, conv in enumerate(self.conversations):
