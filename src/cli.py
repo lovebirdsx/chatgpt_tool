@@ -259,7 +259,6 @@ def run_cli(chatbot: Chatbot, commands: Commands):
 
             ask(chatbot, prompt)
 
-            print(C.ENDC)
             print()
     except (KeyboardInterrupt, EOFError):
         exit()
@@ -315,4 +314,9 @@ if __name__ == '__main__':
     config = load_cmd_config()
 
     print(WELCOME_MESSAGE)
+
+    
+    print(f'Model: {C.WARNING}{config["model"]}{C.ENDC}')
+    print()
+
     main(config)
