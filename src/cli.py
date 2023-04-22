@@ -3,6 +3,10 @@ import logging
 import argparse
 import time
 
+from rich import print as print_rich
+from rich.live import Live
+from rich.markdown import Markdown
+
 from typing import NoReturn
 
 from revChatGPT.V1 import Chatbot
@@ -40,6 +44,10 @@ def try_chatbot(func: callable) -> callable:
         print(f'{C.BOLD}{C.FAIL}Error: Failed to retry {MAX_RETRIES} times{C.ENDC}')
     
     return wrapper
+
+def print_md(msg, **kwargs):
+    print_rich(Markdown(msg), **kwargs)
+
 
 _cache: ConversationCache = None
 def get_conversation_cache(chatbot: Chatbot) -> ConversationCache:
@@ -156,9 +164,11 @@ def main(config: dict) -> NoReturn:
                 continue
 
             if msg['author']['role'] == 'assistant':
-                print(f'{C.OKGREEN}ChatGPT:{C.ENDC}\n{text}')
+                print(f'{C.OKGREEN}ChatGPT:{C.ENDC}')
+                print_md(text)
             elif msg['author']['role'] == 'user':
-                print(f'{C.OKBLUE}You:{C.ENDC}\n{text}')
+                print(f'{C.OKBLUE}You:{C.ENDC}')
+                print_md(text)
             
             print('')
             
@@ -260,11 +270,9 @@ def run_cli(chatbot: Chatbot, commands: Commands):
 
 @try_chatbot
 def ask(chatbot: Chatbot, prompt):
-    prev_text = ''
-    for data in chatbot.ask(prompt, auto_continue=True):
-        message = data['message'][len(prev_text):]
-        print(message, end='', flush=True)
-        prev_text = data['message']
+    with Live(auto_refresh=False, vertical_overflow='visible') as live:
+        for data in chatbot.ask(prompt, auto_continue=True):
+            live.update(Markdown(data['message']), refresh=True)
     save.set('conversation_id', chatbot.conversation_id)
     save.save()
 
