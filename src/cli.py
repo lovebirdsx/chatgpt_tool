@@ -1,6 +1,7 @@
 import json
 import logging
 import argparse
+import os
 import time
 
 from rich import print as print_rich
@@ -13,8 +14,9 @@ from revChatGPT.V1 import Chatbot
 from revChatGPT.utils import create_session, create_completer, get_input
 from revChatGPT.typings import CLIError, Colors
 
-from asker import load_config
+from app import load_config
 from commands import Commands
+from common import to_valid_filename
 from conversation_cache import ConversationCache
 from json_config import JsonConfig
 
@@ -49,6 +51,24 @@ def print_md(msg, **kwargs):
     print_rich(Markdown(msg), **kwargs)
 
 
+def confirm(prompt: str, default: bool = False) -> bool:
+    if default:
+        prompt += ' [Y/n]'
+    else:
+        prompt += ' [y/N]'
+    
+    print(prompt)
+    while True:
+        answer = get_input().strip().lower()
+        if answer == '':
+            return default
+        if answer in ['y', 'yes']:
+            return True
+        if answer in ['n', 'no']:
+            return False
+        print('Invalid answer')
+
+
 _cache: ConversationCache = None
 def get_conversation_cache(chatbot: Chatbot) -> ConversationCache:
     global _cache
@@ -60,6 +80,44 @@ def get_conversation_cache(chatbot: Chatbot) -> ConversationCache:
 def clear_conversation_cache():
     global _cache
     _cache = None
+
+
+@try_chatbot
+def get_history(chatbot: Chatbot, cid: str) -> list[dict]:
+    history = chatbot.get_msg_history(cid, 'utf-8')
+    return history
+
+
+def check_export_dir(config: dict) -> bool:
+    export_dir = config.get('export_dir')
+    if not export_dir:
+        print(f'{C.WARNING}export_dir is not set in config.json{C.ENDC}')
+        return False
+    if not os.path.exists(export_dir):
+        os.makedirs(export_dir)
+    if not os.path.isdir(export_dir):
+        raise Exception(f'export_dir: {export_dir} is not a directory')
+    return True
+
+
+def save_conversation(chatbot: Chatbot, cid: str, title: str, path: str) -> NoReturn:
+    history = get_history(chatbot, cid)
+    mapping = history['mapping']
+    messages = [msg['message'] for msg in mapping.values() if 'message' in msg and 'content' in msg['message']]
+
+    # 将messages写入文件
+    with open(path, 'w', encoding='utf8') as f:
+        f.write(f'# {title}\n\n')
+        for msg in messages:
+            text = msg['content']['parts'][0]
+            if not text.strip():
+                continue
+
+            if msg['author']['role'] == 'assistant':
+                f.write(f'ChatGPT:\n{text}\n\n')
+            elif msg['author']['role'] == 'user':
+                f.write(f'You:\n{text}\n\n')
+    print(f'Save to: {os.path.normpath(path)}')
 
 
 def main(config: dict) -> NoReturn:
@@ -81,8 +139,48 @@ def main(config: dict) -> NoReturn:
 
         cache = get_conversation_cache(chatbot)
         titles = cache.titles()
+        if len(titles) == 0:
+            print(f'{C.WARNING}No conversation.{C.ENDC}')
+            return
+
         for i, title in enumerate(titles):
             print(f'{i:<3}: {C.OKCYAN}{title}{C.ENDC}')
+    
+    def export_conversation(args: list[str]):
+        if len(args) == 2:
+            try:
+                index = int(args[1])
+            except ValueError:
+                print(f'{C.WARNING}Invalid index.{C.ENDC}')
+                return
+            
+            cache = get_conversation_cache(chatbot)
+            if not cache.exist(index):
+                print(f'{C.WARNING}Invalid index.{C.ENDC}')
+                return
+            
+            conversation_id = cache.get_id(index)
+        else:
+            conversation_id = chatbot.conversation_id
+        
+        if not conversation_id:
+            print(f'{C.WARNING}No conversation to export.{C.ENDC}')
+            return
+        
+        if not check_export_dir(config):
+            return
+
+        save_path = f'{config.get("export_dir")}/{to_valid_filename(cache.get_title(index))}.md'
+        save_conversation(chatbot, conversation_id, cache.get_title(index), save_path)
+
+    def export_all_conversations(args: list[str]):
+        if not check_export_dir(config):
+            return
+
+        cache = get_conversation_cache(chatbot)
+        for index in range(len(cache)):
+            save_path = f'{config.get("export_dir")}/{to_valid_filename(cache.get_title(index))}.md'
+            save_conversation(chatbot, cache.get_id(index), cache.get_title(index), save_path)
 
     @try_chatbot
     def delete_conversation(args: list[str]):
@@ -116,6 +214,16 @@ def main(config: dict) -> NoReturn:
             chatbot.conversation_id = None
             save.set('conversation_id', None)
             save.save()
+
+    def delete_all_conversations(args: list[str]):
+        if not confirm('Are you sure to delete all conversations?'):
+            return
+        chatbot.clear_conversations()
+        print(f'{C.OKCYAN}All conversations successfully deleted.{C.ENDC}')
+        clear_conversation_cache()
+        chatbot.conversation_id = None
+        save.set('conversation_id', None)
+        save.save()
 
     def rollback(args: list[str]):
         if chatbot.conversation_id is None:
@@ -225,7 +333,10 @@ def main(config: dict) -> NoReturn:
     commands.add('!show_msgs', 'Show all messages in the current conversation', show_msgs)
     commands.add('!rollback', 'P1: n, Rollback n messages', rollback)
     commands.add('!conversations', 'List all conversations', list_conversations)
+    commands.add('!export', 'P1: cid, export conversation', export_conversation)
+    commands.add('!export_all', 'export all conversations', export_all_conversations)
     commands.add('!delete', 'P1: sid. Delete conversation with sid or current conversation', delete_conversation)
+    commands.add('!delete_all', 'Delete all conversations', delete_all_conversations)
     commands.add('!delete_none_title', 'Delete all conversations without title', delete_none_title_conversations)
     commands.add('!config', 'Show config', show_config)
 
@@ -306,8 +417,8 @@ WELCOME_MESSAGE = f'''
 {C.OKGREEN}ChatGPT Command Tool{C.ENDC} (https://chat.openai.com/chat)
 
 {C.OKCYAN}!help{C.ENDC}       Show All Commands
-{C.OKCYAN}Esc, Enter{C.ENDC}  send message
-{C.OKCYAN}Alt+Enter{C.ENDC}   send message
+{C.OKCYAN}Esc, Enter{C.ENDC}  Send message / Execute command
+{C.OKCYAN}Alt+Enter{C.ENDC}   Send message / Execute command
 '''
 
 if __name__ == '__main__':

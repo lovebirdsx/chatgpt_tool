@@ -22,10 +22,10 @@ Then, please provide a commit message 30 words or less.
 Please reply in chinese:'''
 
 PROG_NAME = 'code_reviewer'
-DESC = '''代码评审器，用于生成代码评审
+DESC = '''A code reviewer used to generate code review
 
-* 根据传入文件所在git仓库，生成当前最新提交（或者未提交）的评审
-* 生成此次评审的提交信息
+* Generate the latest (or unsubmitted) review based on the git repository where the incoming file is located
+* Generate the submission information of this review
 '''
 
 def create_prompt() -> Prompt:
@@ -38,37 +38,37 @@ def create_prompt() -> Prompt:
 
 def create_args_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=DESC)
-    parser.add_argument('-t', '--test', action='store_true', help='是否为测试模式')
-    parser.add_argument('-f', '--file', help='文件路径，将以此文件所在目录为git仓库根目录')
+    parser.add_argument('-t', '--test', action='store_true', help='whether it is in test mode')
+    parser.add_argument('-f', '--file', help='file path, the git repository root directory will be taken as this file directory')
 
     return parser
 
 def gen_patch(repo: git.Repo, file) -> str:
     if not repo:
-        raise Exception(f'文件[{file}]所在目录不是git仓库')
+        raise Exception(f'The directory where the file [{file}] is located is not a git repository')
     
     repo_name = os.path.basename(repo.working_dir)
     patch_path = os.path.join(get_save_path(), f'{repo_name}.patch')
     if repo.is_dirty():
         repo.git.add(A=True)
-        repo.index.commit('code_reviewer自动提交')
+        repo.index.commit('Automatically submitted by code_reviewer')
         os.system(f'cd {os.path.dirname(file)} && git format-patch -1 --stdout > {patch_path}')
         repo.git.reset('HEAD~1')
     else:
         os.system(f'cd {os.path.dirname(file)} && git format-patch -1 --stdout > {patch_path}')
 
     if not os.path.exists(patch_path):
-        raise Exception(f'无法生成patch文件, 请检查文件[{file}]所在目录是否为git仓库')
+        raise Exception(f'Failed to generate patch file. Please check whether the directory where the file [{file}] is located is a git repository')
     return patch_path
 
 def gen_review_header(repo: git.Repo) -> str:
     commit_message = repo.head.commit.message.strip()
-    return f'''# 代码评审
+    return f'''# Code review
 
-版本库：{os.path.basename(repo.working_dir)}
-分支：{repo.active_branch.name}
-提交信息：{"(未提交)" if repo.is_dirty() else commit_message}
-提交者：{"(未知)" if repo.is_dirty() else repo.head.commit.author}
+Repository: {os.path.basename(repo.working_dir)}
+Branch: {repo.active_branch.name}
+Commit information: {"(unsubmitted)" if repo.is_dirty() else commit_message}
+Commit author: {"(unknown)" if repo.is_dirty() else repo.head.commit.author}
 '''
     
 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
     repo = git.Repo(os.path.dirname(file), search_parent_directories=True)
     patch_path = gen_patch(repo, file)
-    print(f'生成patch文件[{patch_path}]')
+    print(f'Generated patch file [{patch_path}]')
 
     prompt = create_prompt()
     result = do_ask_for_large_file_cmd(patch_path, prompt)
@@ -101,5 +101,5 @@ if __name__ == '__main__':
     repo_name = os.path.basename(repo.working_dir)
     result_path = os.path.normpath(os.path.join(get_save_path(), f'code_reviewer/{repo_name}.md'))
     write_file(result_path, review_header + '\n' + result + '\n')
-    print(f'结果保存在：{result_path}')
+    print(f'Results saved in: {result_path}')
     open_file(result_path)

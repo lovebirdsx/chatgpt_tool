@@ -1,9 +1,9 @@
-# Using the Tool with VS Code
+# VS Code下结合该工具的使用
 
-## Running the Corresponding Script via Task
+## 通过Task来运行对应的脚本
 
-- In VS Code, press cmd+shift+p, and run `Tasks: Open User Tasks`.
-- Add the following configuration and replace the corresponding path of the py file with your local path.
+- vscode中cmd+shift+p，运行`Tasks: Open User Tasks`
+- 加入下面的配置，将对应的py文件路径改为本地的路径
 
 ``` json
 {
@@ -35,10 +35,10 @@
 }
 ```
 
-## Running Task via Shortcut
+## Task通过快捷键运行
 
-- In VS Code, press cmd+shift+p, and run `Preferences: Open Keyboard Shortcuts(JSON)`.
-- Add shortcuts like the following, and you can run the corresponding Task via shortcuts.
+- vscode中cmd+shift+p，运行`Preferences: Open Keyboard Shortcuts(JSON)`
+- 加入类似下面的快捷键，即可通过快捷键运行对应的Task
 
 ``` json
 [

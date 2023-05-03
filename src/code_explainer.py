@@ -21,7 +21,7 @@ Summarize them with the most unique and helpful points,
 into a list of key points and takeaways. Reply in chinese:'''
 
 PROG_NAME = 'code_explainer'
-DESC = '代码解释器, 用于生成代码解释，辅助代码阅读'
+DESC = 'Code explainer used to generate code explanations and assist code reading'
 
 def create_prompt() -> Prompt:
     return Prompt(
@@ -33,17 +33,17 @@ def create_prompt() -> Prompt:
 
 def create_args_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=DESC)
-    parser.add_argument('-t', '--test', action='store_true', help='是否为测试模式')
-    parser.add_argument('-c', '--cache', action='store_true', help='是否使用缓存')
-    parser.add_argument('-f', '--file', help='代码文件路径')
-
+    parser.add_argument('-t', '--test', action='store_true', help='whether it is in test mode')
+    parser.add_argument('-c', '--cache', action='store_true', help='whether to use cache')
+    parser.add_argument('-f', '--file', help='path of the code file')
     return parser
 
+
 def gen_explain_header(path: str) -> str:
-    return f'# {path}\n\n[打开](file:///{path})\n'
+    return f'# {path}\n\n[Open](file:///{path})\n'
 
 def test() -> None:
-    print('测试通过')
+    print('Test passed')
 
 if __name__ == '__main__':
     parser = create_args_parser()

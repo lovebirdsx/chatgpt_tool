@@ -1,23 +1,19 @@
-import os
 import time
 import tiktoken
 
 from revChatGPT.V1 import Chatbot
 
-from app import get_save_path
+from app import load_config
 
 TRUNK_TOKEN_SIZE = 2800
 TRUNK_STR_SIZE = 11500
 MAX_ASK_RETRY_COUNT = 10
 
-DEFAULT_CONFIG = {
-    'proxy': 'socks5h://localhost:38888',
-    'model': 'gpt-3.5-turbo',
-    'access_token': 'open https://chat.openai.com/api/auth/session to get your access_token'
-}
+
 
 class AskTimeoutException(Exception):
     pass
+
 
 def get_next_trunk_text(encoder: tiktoken.Encoding, tockens: list[int], tocken_index: int) -> tuple[str, int]:
     chunk_token_size = TRUNK_TOKEN_SIZE
@@ -29,7 +25,8 @@ def get_next_trunk_text(encoder: tiktoken.Encoding, tockens: list[int], tocken_i
             chunk_token_size = int(chunk_token_size * 0.9)
         else:
             return chunk_str, tocken_index + chunk_token_size
-    raise Exception('无法生成下一个trunk')
+    raise Exception('Unable to generate the next trunk.')
+
 
 def split_code(gpt_mode: str, code: str) -> tuple[list[str], int]:
     encoder = tiktoken.encoding_for_model(gpt_mode)
@@ -47,7 +44,7 @@ def split_code(gpt_mode: str, code: str) -> tuple[list[str], int]:
     return result, len(tockens)
 
 def ask_trunk_impl(bot: Chatbot, prompt_prefix: str, trunk: str, log_prefix = '') -> str:
-    print(f'{log_prefix}提问: {prompt_prefix} 文本长度: {len(trunk)}\n')
+    print(f'{log_prefix}Ask: {prompt_prefix} Text len: {len(trunk)}\n')
     prev_text = ''
     for data in bot.ask(prompt_prefix + trunk):
         message = data['message'][len(prev_text) :]
@@ -62,10 +59,10 @@ def ask(bot: Chatbot, prompt_prefix: str, code: str, log_prefix = '') -> str:
         try:
             return ask_trunk_impl(bot, prompt_prefix, code, log_prefix)
         except Exception as e:
-            print(f'错误:{e}')
-            print(f'\n[{i+1}/{MAX_ASK_RETRY_COUNT}]3秒后重试')
+            print(f'Error:{e}')
+            print(f'\n[{i+1}/{MAX_ASK_RETRY_COUNT}]Retry in 3 seconds.')
             time.sleep(3)
-    raise AskTimeoutException(f'重试次数超过上限{MAX_ASK_RETRY_COUNT}')
+    raise AskTimeoutException(f'The number of retries has exceeded the limit {MAX_ASK_RETRY_COUNT}')
 
 class Prompt:
     def __init__(self, trunk_first, trunk_next, sumarize_muti, sumarize_single) -> None:
@@ -95,6 +92,7 @@ def ask_for_content(bot: Chatbot, content: str, prompt: Prompt) -> list[str]:
     
     return result
 
+
 def format_result(result: list[str]) -> str:
     formated_result = []
     for i, r in enumerate(result):
@@ -106,19 +104,6 @@ def format_result(result: list[str]) -> str:
         else:
             formated_result.append(f'## ChatGPT汇总:\n\n{r}')
     return '\n'.join(formated_result)
-
-
-def load_config() -> dict:
-    import json
-    path = get_save_path() + '/config.json'
-    if not os.path.exists(path):
-        os.makedirs(get_save_path(), exist_ok=True)
-        with open(path, 'w') as f:
-            json.dump(DEFAULT_CONFIG, f)
-            raise Exception(f'请先配置config.json, 位于: {path}')
-
-    with open(get_save_path() + '/config.json', 'r') as f:
-        return json.load(f)
 
 
 def do_ask_for_large_file_cmd(path: str, prompt: Prompt) -> str:
@@ -134,8 +119,8 @@ def do_ask_for_large_file_cmd(path: str, prompt: Prompt) -> str:
                 bot.delete_conversation(bot.conversation_id)
                 break
             except Exception as e:
-                print(f'错误:{e}')
-                print(f'\n[{i+1}/{MAX_ASK_RETRY_COUNT}]删除会话失败，3秒后重试')
+                print(f'Error:{e}')
+                print(f'\n[{i+1}/{MAX_ASK_RETRY_COUNT}]Failed to delete session, retrying in 3 seconds.')
                 time.sleep(3)
 
         return format_result(result)

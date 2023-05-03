@@ -4,7 +4,8 @@ import os
 
 from app import get_save_path
 
-# Config的使用范例
+# Example of using Config:
+#
 # config = Config('config.json')
 # config['name'] = 'test'
 # config['age'] = 18
@@ -29,7 +30,7 @@ class JsonConfig:
         if not self.is_dirty:
             return
 
-        # 如果目录不存在, 则创建
+        # Create the directory if it does not exist.
         dir_path = os.path.dirname(self.path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)

@@ -1,5 +1,5 @@
 import os
-import sys
+import re
 
 
 def write_file(path: str, content: str) -> None:
@@ -18,3 +18,8 @@ def read_file(path: str) -> str:
 
 def open_file(path: str) -> None:
     os.system(f'explorer {path}')
+
+
+def to_valid_filename(s):
+    # 将字符串中的非法字符替换为下划线
+    return re.sub(r'[^\w\s-]', '_', s).strip()
