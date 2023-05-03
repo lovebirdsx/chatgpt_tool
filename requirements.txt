@@ -1,3 +1,4 @@
 GitPython
 revChatGPT
 tiktoken
+rich
