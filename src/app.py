@@ -12,6 +12,7 @@ def get_save_path() -> str:
 DEFAULT_CONFIG = {
     'proxy': 'socks5h://localhost:38888',
     'model': 'gpt-3.5-turbo',
+    'language': 'chinese',
     'access_token': 'open https://chat.openai.com/api/auth/session to get your access_token',
     'export_dir': get_save_path() + '/export',
 }
@@ -28,3 +29,7 @@ def load_config() -> dict:
 
     with open(get_save_path() + '/config.json', 'r') as f:
         return json.load(f)
+
+
+def get_language() -> str:
+    return load_config().get('language') or DEFAULT_CONFIG['language']

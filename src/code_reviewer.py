@@ -1,25 +1,27 @@
 import argparse
 import os
 import git
-from app import get_save_path
+from app import get_language, get_save_path
 from asker import Prompt, do_ask_for_large_file_cmd
 from common import open_file, write_file
 
-TRUNK_PROMPT_FIRST = '''The content I sent you is a part of a code patch.
+LANGUAGE = get_language()
+
+TRUNK_PROMPT_FIRST = f'''The content I sent you is a part of a code patch.
 please help me do a brief code review. If any bug risk and improvement suggestion are welcome.
-Reply in chinese:'''
+Reply in {LANGUAGE}:'''
 
-TRUNK_PROMPT_NEXT = '''Please continue to do code view.
-If any bug risk and improvement suggestion are welcome. Reply in chinese:'''
+TRUNK_PROMPT_NEXT = f'''Please continue to do code view.
+If any bug risk and improvement suggestion are welcome. Reply in {LANGUAGE}:'''
 
-SUMARIZE_MUTI_PROMPT = '''The following content is code reviews of different parts of the same code patch.
+SUMARIZE_MUTI_PROMPT = f'''The following content is code reviews of different parts of the same code patch.
 First, please summarize them with the most unique and helpful points, into a list of key points and takeaways.
-Then, please provide a commit message 30 words or less. Please reply in chinese:'''
+Then, please provide a commit message 30 words or less. Please reply in {LANGUAGE}:'''
 
-SUMARIZE_SINGLE_PROMPT = '''Bellow is the code patch, First, please help me do a brief code review,
+SUMARIZE_SINGLE_PROMPT = f'''Bellow is the code patch, First, please help me do a brief code review,
 If any bug risk and improvement suggestion are welcome. 
 Then, please provide a commit message 30 words or less.
-Please reply in chinese:'''
+Please reply in {LANGUAGE}:'''
 
 PROG_NAME = 'code_reviewer'
 DESC = '''A code reviewer used to generate code review

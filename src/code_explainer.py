@@ -1,24 +1,27 @@
 import argparse
 
+from app import get_language
 from cache import Cache
 from asker import Prompt, do_ask_for_large_file_cmd
 from common import open_file
 
-TRUNK_PROMPT_FIRST = '''The code I sent you is a part of a code file.
-Please help me generate a summary. include the most unique and helpful points.
-no need to include all the details. 300 words or less. Reply in chinese:'''
+LANGUAGE = get_language()
 
-TRUNK_PROMPT_NEXT = '''The following code is a follow-up to the code I sent you before,
+TRUNK_PROMPT_FIRST = f'''The code I sent you is a part of a code file.
 Please help me generate a summary. include the most unique and helpful points.
-no need to include all the details. 300 words or less. Reply in chinese:'''
+no need to include all the details. 300 words or less. Reply in {LANGUAGE}:'''
 
-SUMARIZE_MUTI_PROMPT = '''The following content is a summary of different parts of the same code file.
+TRUNK_PROMPT_NEXT = f'''The following code is a follow-up to the code I sent you before,
+Please help me generate a summary. include the most unique and helpful points.
+no need to include all the details. 300 words or less. Reply in {LANGUAGE}:'''
+
+SUMARIZE_MUTI_PROMPT = f'''The following content is a summary of different parts of the same code file.
 Please summarize them with the most unique and helpful points, into a list of key points and takeaways.
-Reply in chinese:'''
+Reply in {LANGUAGE}:'''
 
-SUMARIZE_SINGLE_PROMPT = '''The texts I send to you are all come form the same code file,
+SUMARIZE_SINGLE_PROMPT = f'''The texts I send to you are all come form the same code file,
 Summarize them with the most unique and helpful points,
-into a list of key points and takeaways. Reply in chinese:'''
+into a list of key points and takeaways. Reply in {LANGUAGE}:'''
 
 PROG_NAME = 'code_explainer'
 DESC = 'Code explainer used to generate code explanations and assist code reading'
