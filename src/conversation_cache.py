@@ -6,7 +6,7 @@ class ConversationCache:
     def exist(self, index: int) -> bool:
         return 0 <= index and index < len(self.conversations)
     
-    def get_id(self, index: int) -> str:
+    def get_cid(self, index: int) -> str:
         return self.conversations[index].get('id')
     
     def delete(self, index: int):

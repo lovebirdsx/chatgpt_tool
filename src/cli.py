@@ -159,7 +159,7 @@ def main(config: dict) -> NoReturn:
                 print(f'{C.WARNING}Invalid index.{C.ENDC}')
                 return
             
-            conversation_id = cache.get_id(index)
+            conversation_id = cache.get_cid(index)
         else:
             conversation_id = chatbot.conversation_id
         
@@ -180,12 +180,11 @@ def main(config: dict) -> NoReturn:
         cache = get_conversation_cache(chatbot)
         for index in range(len(cache)):
             save_path = f'{config.get("export_dir")}/{to_valid_filename(cache.get_title(index))}.md'
-            save_conversation(chatbot, cache.get_id(index), cache.get_title(index), save_path)
+            save_conversation(chatbot, cache.get_cid(index), cache.get_title(index), save_path)
 
     @try_chatbot
     def delete_conversation(args: list[str]):
         cache = get_conversation_cache(chatbot)
-        index = 0
         if len(args) == 2:
             try:
                 index = int(args[1])
@@ -197,16 +196,17 @@ def main(config: dict) -> NoReturn:
                 print(f'{C.WARNING}Invalid index.{C.ENDC}')
                 return
             
-            conversation_id = cache.get_id(index)
+            conversation_id = cache.get_cid(index)
         else:
             conversation_id = chatbot.conversation_id
+            index = cache.get_index(conversation_id)
         
         if not conversation_id:
             print(f'{C.WARNING}No conversation to delete.{C.ENDC}')
             return
 
-        chatbot.delete_conversation(conversation_id)
         title = cache.get_title(index)
+        chatbot.delete_conversation(conversation_id)
         cache.delete(index)
         print(f'session {C.OKCYAN}{title}{C.ENDC} successfully delete.')
 
@@ -245,14 +245,14 @@ def main(config: dict) -> NoReturn:
                 print(f'{C.WARNING}Invalid index.{C.ENDC}')
                 return
 
-            conversation_id = cache.get_id(index)
+            conversation_id = cache.get_cid(index)
             chatbot.conversation_id = conversation_id
             print(f'Conversation successfully set to {C.OKCYAN}{cache.get_title(index)}{C.ENDC}.\n')
             save.set('conversation_id', conversation_id)
             save.save()
             show_msgs([])
         except IndexError:
-            print(f'{C.WARNING}Please include conversation UUID in command{C.ENDC}')
+            print(f'{C.WARNING}Invalid index.{C.ENDC}')
 
     @try_chatbot
     def show_msgs(args: list[str]):
