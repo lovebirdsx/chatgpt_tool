@@ -143,8 +143,13 @@ def main(config: dict) -> NoReturn:
             print(f'{C.WARNING}No conversation.{C.ENDC}')
             return
 
+        current_cid = chatbot.conversation_id
+
         for i, title in enumerate(titles):
-            print(f'{i:<3}: {C.OKCYAN}{title}{C.ENDC}')
+            if cache.get_cid(i) == current_cid:
+                print(f'{i:<3}: {C.OKCYAN}{title}{C.ENDC} {C.OKGREEN}(current){C.ENDC}')
+            else:
+                print(f'{i:<3}: {C.OKCYAN}{title}{C.ENDC}')
     
     def export_conversation(args: list[str]):
         if len(args) == 2:
