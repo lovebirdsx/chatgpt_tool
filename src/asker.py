@@ -72,7 +72,7 @@ class Prompt:
         self.sumarize_single = sumarize_single
 
 def ask_for_content(bot: Chatbot, content: str, prompt: Prompt) -> list[str]:
-    trunks, token_count = split_code(bot.config['model'], content)
+    trunks, token_count = split_code('gpt-3.5-turbo', content)
     print(f'Code length: {len(content)} token_count: {token_count} trunks: {len(trunks)}')
     result = []
     if len(trunks) > 1:
@@ -116,7 +116,7 @@ def do_ask_for_large_file_cmd(path: str, prompt: Prompt) -> str:
 
         for i in range(0, MAX_ASK_RETRY_COUNT):
             try:
-                bot.delete_conversation(bot.conversation_id)
+                bot.delete_conversation(bot.conversation_id) # type: ignore
                 break
             except Exception as e:
                 print(f'Error:{e}')

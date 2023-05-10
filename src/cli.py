@@ -8,7 +8,7 @@ from rich import print as print_rich
 from rich.live import Live
 from rich.markdown import Markdown
 
-from typing import NoReturn
+from typing import Callable
 
 from revChatGPT.V1 import Chatbot
 from revChatGPT.utils import create_session, create_completer, get_input
@@ -30,11 +30,11 @@ save = JsonConfig('save.json')
 
 MAX_RETRIES = 5
 
-def try_chatbot(func: callable) -> callable:
-    def wrapper(*args):
+def try_chatbot(func: Callable[..., object]) -> Callable[..., object]:
+    def wrapper(*args, **kwargs):
         for i in range(0, MAX_RETRIES):
             try:
-                return func(*args)
+                return func(*args, **kwargs)
             except Exception as e:
                 print(f'{C.FAIL}Error [{i+1}/{MAX_RETRIES}]{C.ENDC}:{e}')
                 if i < MAX_RETRIES - 1:
@@ -69,7 +69,7 @@ def confirm(prompt: str, default: bool = False) -> bool:
         print('Invalid answer')
 
 
-_cache: ConversationCache = None
+_cache: ConversationCache | None = None
 def get_conversation_cache(chatbot: Chatbot) -> ConversationCache:
     global _cache
     if _cache is None:
@@ -83,9 +83,9 @@ def clear_conversation_cache():
 
 
 @try_chatbot
-def get_history(chatbot: Chatbot, cid: str) -> list[dict]:
+def get_history(chatbot: Chatbot, cid: str) -> dict:
     history = chatbot.get_msg_history(cid, 'utf-8')
-    return history
+    return history # type: ignore
 
 
 def check_export_dir(config: dict) -> bool:
@@ -100,9 +100,9 @@ def check_export_dir(config: dict) -> bool:
     return True
 
 
-def save_conversation(chatbot: Chatbot, cid: str, title: str, path: str) -> NoReturn:
+def save_conversation(chatbot: Chatbot, cid: str, title: str, path: str) -> None:
     history = get_history(chatbot, cid)
-    mapping = history['mapping']
+    mapping = history['mapping'] # type: ignore
     messages = [msg['message'] for msg in mapping.values() if 'message' in msg and 'content' in msg['message']]
 
     # 将messages写入文件
@@ -120,7 +120,7 @@ def save_conversation(chatbot: Chatbot, cid: str, title: str, path: str) -> NoRe
     print(f'Save to: {os.path.normpath(path)}')
 
 
-def main(config: dict) -> NoReturn:
+def main(config: dict) -> None:
     chatbot = Chatbot(
         config,
         conversation_id=config.get('conversation_id'),
@@ -147,6 +147,7 @@ def main(config: dict) -> NoReturn:
             print(f'{i:<3}: {C.OKCYAN}{title}{C.ENDC}')
     
     def export_conversation(args: list[str]):
+        cache = get_conversation_cache(chatbot)
         if len(args) == 2:
             try:
                 index = int(args[1])
@@ -154,22 +155,24 @@ def main(config: dict) -> NoReturn:
                 print(f'{C.WARNING}Invalid index.{C.ENDC}')
                 return
             
-            cache = get_conversation_cache(chatbot)
             if not cache.exist(index):
                 print(f'{C.WARNING}Invalid index.{C.ENDC}')
                 return
             
             conversation_id = cache.get_cid(index)
+            if not conversation_id:
+                print(f'{C.WARNING}No conversation to export.{C.ENDC}')
+                return
         else:
             conversation_id = chatbot.conversation_id
-        
-        if not conversation_id:
-            print(f'{C.WARNING}No conversation to export.{C.ENDC}')
-            return
-        
+            if not conversation_id:
+                print(f'{C.WARNING}No conversation to export.{C.ENDC}')
+                return
+            index = cache.get_index(conversation_id)
+
         if not check_export_dir(config):
             return
-
+        
         save_path = f'{config.get("export_dir")}/{to_valid_filename(cache.get_title(index))}.md'
         save_conversation(chatbot, conversation_id, cache.get_title(index), save_path)
 
@@ -199,6 +202,9 @@ def main(config: dict) -> NoReturn:
             conversation_id = cache.get_cid(index)
         else:
             conversation_id = chatbot.conversation_id
+            if not conversation_id:
+                print(f'{C.WARNING}No conversation to delete.{C.ENDC}')
+                return
             index = cache.get_index(conversation_id)
         
         if not conversation_id:
@@ -261,9 +267,9 @@ def main(config: dict) -> NoReturn:
             return
         
         history = chatbot.get_msg_history(chatbot.conversation_id, 'utf-8')
-        print(f'{C.OKCYAN + C.BOLD}Title: {history["title"]}{C.ENDC}\n')
+        print(f'{C.OKCYAN + C.BOLD}Title: {history["title"]}{C.ENDC}\n') # type: ignore
 
-        mapping = history['mapping']
+        mapping = history['mapping'] # type: ignore
         messages = [msg['message'] for msg in mapping.values() if 'message' in msg and 'content' in msg['message']]
 
         for msg in messages:
@@ -294,8 +300,8 @@ def main(config: dict) -> NoReturn:
         conversations = [conv for conv in cache.conversations if conv.get('title') == 'New chat']
         for conv in conversations:
             id = conv.get('id')
-            chatbot.delete_conversation(id)
-            index = cache.get_index(id)
+            chatbot.delete_conversation(id) # type: ignore
+            index = cache.get_index(id) # type: ignore
             title = cache.get_title(index)
             cache.delete(index)
             print(f'session {C.OKCYAN}{title}{C.ENDC} successfully delete.')
@@ -387,7 +393,7 @@ def ask(chatbot: Chatbot, prompt):
     save.save()
 
     cache = get_conversation_cache(chatbot)
-    if cache.get_index(chatbot.conversation_id) == -1:
+    if chatbot.conversation_id and cache.get_index(chatbot.conversation_id) == -1:
         conversation = {
             'id': chatbot.conversation_id,
             'title': 'New chat'

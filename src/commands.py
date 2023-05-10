@@ -1,9 +1,11 @@
+from typing import Callable
+
 from revChatGPT.typings import Colors
 
 C = Colors()
 
 class CommandItem:
-    def __init__(self, name: str, help: str, func: callable):
+    def __init__(self, name: str, help: str, func: Callable[..., object]):
         self.name = name
         self.help = help
         self.func = func
@@ -14,7 +16,7 @@ class Commands:
         self.commands = []
         self.add('!help', 'Show this message', lambda _: print(self.get_help()))
 
-    def add(self, name: str, help: str, func: callable):
+    def add(self, name: str, help: str, func: Callable[..., object]):
         self.commands.append(CommandItem(name, help, func))
 
     def get_help(self) -> str:

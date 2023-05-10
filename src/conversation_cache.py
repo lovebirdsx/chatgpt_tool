@@ -7,7 +7,7 @@ class ConversationCache:
         return 0 <= index and index < len(self.conversations)
     
     def get_cid(self, index: int) -> str:
-        return self.conversations[index].get('id')
+        return self.conversations[index].get('id') # type: ignore
     
     def delete(self, index: int):
         if not self.exist(index):
@@ -18,7 +18,7 @@ class ConversationCache:
         self.conversations.insert(0, conversation)
 
     def get_title(self, index: int) -> str:
-        return self.conversations[index].get('title')
+        return self.conversations[index].get('title') # type: ignore
     
     def set_title(self, index: int, title: str):
         self.conversations[index]['title'] = title
@@ -30,7 +30,7 @@ class ConversationCache:
         return -1
     
     def titles(self) -> list[str]:
-        return [conv.get('title') for conv in self.conversations]
+        return [conv.get('title') for conv in self.conversations] # type: ignore
     
     def __getitem__(self, index: int) -> dict | None:
         if index < 0 or index >= len(self.conversations):

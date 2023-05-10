@@ -1,6 +1,6 @@
 import argparse
 import os
-import git
+from git.repo import Repo
 from app import get_language, get_save_path
 from asker import Prompt, do_ask_for_large_file_cmd
 from common import open_file, write_file
@@ -45,7 +45,7 @@ def create_args_parser() -> argparse.ArgumentParser:
 
     return parser
 
-def gen_patch(repo: git.Repo, file) -> str:
+def gen_patch(repo: Repo, file) -> str:
     if not repo:
         raise Exception(f'The directory where the file [{file}] is located is not a git repository')
     
@@ -63,7 +63,7 @@ def gen_patch(repo: git.Repo, file) -> str:
         raise Exception(f'Failed to generate patch file. Please check whether the directory where the file [{file}] is located is a git repository')
     return patch_path
 
-def gen_review_header(repo: git.Repo) -> str:
+def gen_review_header(repo: Repo) -> str:
     commit_message = repo.head.commit.message.strip()
     return f'''# Code review
 
@@ -75,7 +75,7 @@ Commit author: {"(unknown)" if repo.is_dirty() else repo.head.commit.author}
     
 
 def test() -> None:
-    repo = git.Repo(os.path.dirname(__file__), search_parent_directories=True)
+    repo = Repo(os.path.dirname(__file__), search_parent_directories=True)
     print(gen_review_header(repo))
 
 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
         print(parser.format_help())
         exit(0)
 
-    repo = git.Repo(os.path.dirname(file), search_parent_directories=True)
+    repo = Repo(os.path.dirname(file), search_parent_directories=True)
     patch_path = gen_patch(repo, file)
     print(f'Generated patch file [{patch_path}]')
 
