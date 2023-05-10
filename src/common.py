@@ -1,6 +1,10 @@
 import os
 import re
 
+GPT_MODELS = {
+    '3.5': 'text-davinci-002-render-sha',
+    '4': 'gpt-4',
+}
 
 def write_file(path: str, content: str) -> None:
     dir = os.path.dirname(path)
@@ -21,5 +25,4 @@ def open_file(path: str) -> None:
 
 
 def to_valid_filename(s):
-    # 将字符串中的非法字符替换为下划线
     return re.sub(r'[^\w\s-]', '_', s).strip()

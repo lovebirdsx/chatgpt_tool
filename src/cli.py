@@ -16,7 +16,7 @@ from revChatGPT.typings import CLIError, Colors
 
 from app import load_config
 from commands import Commands
-from common import to_valid_filename
+from common import GPT_MODELS, to_valid_filename
 from conversation_cache import ConversationCache
 from json_config import JsonConfig
 
@@ -143,13 +143,8 @@ def main(config: dict) -> NoReturn:
             print(f'{C.WARNING}No conversation.{C.ENDC}')
             return
 
-        current_cid = chatbot.conversation_id
-
         for i, title in enumerate(titles):
-            if cache.get_cid(i) == current_cid:
-                print(f'{i:<3}: {C.OKCYAN}{title}{C.ENDC} {C.OKGREEN}(current){C.ENDC}')
-            else:
-                print(f'{i:<3}: {C.OKCYAN}{title}{C.ENDC}')
+            print(f'{i:<3}: {C.OKCYAN}{title}{C.ENDC}')
     
     def export_conversation(args: list[str]):
         if len(args) == 2:
@@ -411,10 +406,10 @@ def parse_args() -> argparse.Namespace:
 def load_cmd_config() -> dict:
     config = load_config()
     args = parse_args()
-    if args.mode == '3.5':
-        config['model'] = 'gpt-3.5-turbo'
+    if args.mode == '3.5' or not args.mode:
+        config['model'] = GPT_MODELS['3.5']
     elif args.mode == '4':
-        config['model'] = 'gpt-4'
+        config['model'] = GPT_MODELS['4']
     return config
 
 

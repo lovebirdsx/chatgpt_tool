@@ -1,5 +1,7 @@
 import os
 
+from common import GPT_MODELS
+
 def get_save_path() -> str:
     home = os.getenv('HOME')
     if not home:
@@ -11,7 +13,7 @@ def get_save_path() -> str:
 
 DEFAULT_CONFIG = {
     'proxy': 'socks5h://localhost:38888',
-    'model': 'gpt-3.5-turbo',
+    'model': GPT_MODELS['3.5'],
     'language': 'chinese',
     'access_token': 'open https://chat.openai.com/api/auth/session to get your access_token',
     'export_dir': get_save_path() + '/export',
