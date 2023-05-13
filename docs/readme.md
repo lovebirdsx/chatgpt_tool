@@ -14,13 +14,6 @@
 
 - `pip install -r requirements.txt`
 
-**Note**
-
-As using the access token to call the web version is an unofficial approach, it may not work. You can generally solve the problem by using the following command:
-`python -m pip install --upgrade revChatGPT --isolated`
-Adding the `--isolated` parameter can resolve possible unofficial software source issues.
-For more information, please refer to [here](https://github.com/acheong08/ChatGPT).
-
 ## Usage
 
 ### Configuring ChatGPT

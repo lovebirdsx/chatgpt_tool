@@ -1,4 +1,8 @@
 GitPython
-revChatGPT
 tiktoken
 rich
+httpx[socks]
+openai
+OpenAIAuth==0.3.2
+prompt-toolkit
+requests[socks]

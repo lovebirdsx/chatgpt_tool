@@ -14,13 +14,6 @@
 
 - `pip install -r requirements.txt`
 
-**注意**
-
-由于通过access_token来调用网页版是非官方的做法，所以可能会出现访问不了的情况，一般可以通过如下方式来解决：
-`python -m pip install --upgrade revChatGPT --isolated`
-加入`--isolated`参数来解决可能出现的非官方软件源问题
-具体请关注[这里](https://github.com/acheong08/ChatGPT)
-
 ## 使用
 
 ### 配置chatgpt
