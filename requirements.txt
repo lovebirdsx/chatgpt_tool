@@ -6,3 +6,4 @@ openai
 OpenAIAuth==0.3.2
 prompt-toolkit
 requests[socks]
+async_tio
