@@ -105,10 +105,12 @@ def save_conversation(chatbot: Chatbot, cid: str, title: str, path: str) -> None
     mapping = history['mapping'] # type: ignore
     messages = [msg['message'] for msg in mapping.values() if 'message' in msg and 'content' in msg['message']]
 
-    # 将messages写入文件
     with open(path, 'w', encoding='utf8') as f:
         f.write(f'# {title}\n\n')
         for msg in messages:
+            content_type = msg['content']['content_type']
+            if content_type != 'text':
+                continue
             text = msg['content']['parts'][0]
             if not text.strip():
                 continue
