@@ -279,6 +279,10 @@ def main(config: dict) -> None:
         messages = [msg['message'] for msg in mapping.values() if 'message' in msg and 'content' in msg['message']]
 
         for msg in messages:
+            content_type = msg['content']['content_type']
+            if content_type != 'text':
+                continue
+
             text = msg['content']['parts'][0]
             if not text.strip():
                 continue
