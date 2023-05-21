@@ -106,12 +106,10 @@ def format_result(result: list[str]) -> str:
     return '\n'.join(formated_result)
 
 
-def do_ask_for_large_file_cmd(path: str, prompt: Prompt) -> str:
+def do_ask_for_large_file_cmd(path: str, prompt: Prompt, config: dict) -> str:
     with open(path, 'r') as f:
         code = f.read()
-        conf = load_config()
-        # print(conf)
-        bot = Chatbot(conf)
+        bot = Chatbot(config)
         result = ask_for_content(bot, code, prompt)
 
         for i in range(0, MAX_ASK_RETRY_COUNT):

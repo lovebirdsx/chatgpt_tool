@@ -1,6 +1,6 @@
 import argparse
 
-from app import get_language
+from app import get_language, load_config
 from cache import Cache
 from asker import Prompt, do_ask_for_large_file_cmd
 from common import open_file
@@ -39,6 +39,7 @@ def create_args_parser() -> argparse.ArgumentParser:
     parser.add_argument('-t', '--test', action='store_true', help='whether it is in test mode')
     parser.add_argument('-c', '--cache', action='store_true', help='whether to use cache')
     parser.add_argument('-f', '--file', help='path of the code file')
+    parser.add_argument('-cfg', '--config', help='path of the config file')
     return parser
 
 
@@ -70,7 +71,8 @@ if __name__ == '__main__':
 
     prompt = create_prompt()
     if args.file:
-        result = do_ask_for_large_file_cmd(args.file, prompt)
+        config = load_config(args.config)
+        result = do_ask_for_large_file_cmd(args.file, prompt, config)
         if not result:
             exit(1)
 

@@ -1,7 +1,7 @@
 import argparse
 import os
 from git.repo import Repo
-from app import get_language, get_save_path
+from app import get_language, get_save_path, load_config
 from asker import Prompt, do_ask_for_large_file_cmd
 from common import open_file, write_file
 
@@ -42,6 +42,7 @@ def create_args_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=DESC)
     parser.add_argument('-t', '--test', action='store_true', help='whether it is in test mode')
     parser.add_argument('-f', '--file', help='file path, the git repository root directory will be taken as this file directory')
+    parser.add_argument('-cfg', '--config', help='path of the config file')
 
     return parser
 
@@ -97,7 +98,8 @@ if __name__ == '__main__':
     print(f'Generated patch file [{patch_path}]')
 
     prompt = create_prompt()
-    result = do_ask_for_large_file_cmd(patch_path, prompt)
+    config = load_config(args.config)
+    result = do_ask_for_large_file_cmd(patch_path, prompt, config)
     
     review_header = gen_review_header(repo)
     repo_name = os.path.basename(repo.working_dir)

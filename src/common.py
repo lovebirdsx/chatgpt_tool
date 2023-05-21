@@ -26,3 +26,16 @@ def open_file(path: str) -> None:
 
 def to_valid_filename(s):
     return re.sub(r'[^\w\s-]', '_', s).strip()
+
+
+def replace_env_variables(json_string):
+     pattern = r"\$\{(\w+)\}"
+
+     def replace(match):
+         env_var = match.group(1)
+         env_value = os.environ.get(env_var)
+         env_value = env_value.replace('\\', '/')
+         return env_value if env_value else match.group()
+     
+     updated_json_string = re.sub(pattern, replace, json_string)
+     return updated_json_string

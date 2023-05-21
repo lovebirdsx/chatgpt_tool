@@ -67,8 +67,8 @@
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src",
             "args": [
-                "-m",
-                "3.5"
+                "--mode", "3.5",
+                "--config", "${env:S}/chatgpt_config.json",
             ]
         }
     ]

@@ -38,6 +38,7 @@
 - `export_dir`是导出对话的目录
 - `language`是用来做代码审查和解释的语言
 
+另外，可以支持环境变量，类似于：`"export_dir": ${CHATGPT_EXPORT_DIR}`
 
 ### 运行
 

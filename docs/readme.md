@@ -38,6 +38,8 @@ where:
 - `export_dir` is the directory to export the conversations.
 - `language` is the language to do code review and explanation
 
+Additionally, environment variables can be supported, like: `"export_dir": ${CHATGPT_EXPORT_DIR}`
+
 ### Running
 
 - Code explanation: `python code_explainer.py -h`

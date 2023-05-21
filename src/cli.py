@@ -415,13 +415,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Chatgpt Command Line Tool')
     parser.add_argument('-m', '--mode', type=str, default='3.5',
                         help='gpt mode, 3.5 or 4, default 3.5')
+    parser.add_argument('-cfg', '--config', help='config file path')
 
     return parser.parse_args()
 
 
 def load_cmd_config() -> dict:
-    config = load_config()
     args = parse_args()
+    config = load_config(args.config)
     if args.mode == '3.5' or not args.mode:
         config['model'] = GPT_MODELS['3.5']
     elif args.mode == '4':

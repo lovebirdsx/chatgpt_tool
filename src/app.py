@@ -1,6 +1,7 @@
 import os
+import json
 
-from common import GPT_MODELS
+from common import GPT_MODELS, replace_env_variables
 
 def get_save_path() -> str:
     home = os.getenv('HOME')
@@ -20,17 +21,17 @@ DEFAULT_CONFIG = {
 }
 
 
-def load_config() -> dict:
-    import json
-    path = get_save_path() + '/config.json'
+def load_config(path = None) -> dict:
+    path = path or f'{get_save_path()}/config.json'
     if not os.path.exists(path):
         os.makedirs(get_save_path(), exist_ok=True)
         with open(path, 'w') as f:
             json.dump(DEFAULT_CONFIG, f)
             raise Exception(f'Please configure config.json first, located at: {path}')
-
-    with open(get_save_path() + '/config.json', 'r') as f:
-        return json.load(f)
+    
+    with open(path, 'r') as f:
+        content = replace_env_variables(f.read())
+        return json.loads(content)
 
 
 def get_language() -> str:
