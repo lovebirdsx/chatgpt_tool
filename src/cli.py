@@ -411,6 +411,7 @@ def ask(chatbot: Chatbot, prompt):
             'id': chatbot.conversation_id,
             'title': title,
         }
+        print(f'\n{C.OKCYAN}{title}{C.ENDC} created.')
         cache.add(conversation)
 
 
