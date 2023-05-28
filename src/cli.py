@@ -396,17 +396,20 @@ def run_cli(chatbot: Chatbot, commands: Commands):
 
 @try_chatbot
 def ask(chatbot: Chatbot, prompt):
+    message_id = 0
     with Live(auto_refresh=False, vertical_overflow='visible') as live:
         for data in chatbot.ask(prompt, auto_continue=True):
             live.update(Markdown(data['message']), refresh=True)
+            message_id = data['parent_id']
     save.set('conversation_id', chatbot.conversation_id)
     save.save()
 
     cache = get_conversation_cache(chatbot)
     if chatbot.conversation_id and cache.get_index(chatbot.conversation_id) == -1:
+        title = chatbot.gen_title(chatbot.conversation_id, message_id)
         conversation = {
             'id': chatbot.conversation_id,
-            'title': 'New chat'
+            'title': title,
         }
         cache.add(conversation)
 
