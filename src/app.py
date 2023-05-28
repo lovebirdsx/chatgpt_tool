@@ -13,7 +13,6 @@ def get_save_path() -> str:
 
 
 DEFAULT_CONFIG = {
-    'proxy': 'socks5h://localhost:38888',
     'model': GPT_MODELS['3.5'],
     'language': 'chinese',
     'access_token': 'open https://chat.openai.com/api/auth/session to get your access_token',

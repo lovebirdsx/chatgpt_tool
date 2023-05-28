@@ -22,7 +22,6 @@ Create a `.chatgpt_tool` folder in your user directory and create a `config.json
 
 ```json
 {
-    "proxy": "your_proxy",
     "model": "gpt-3.5-turbo",
     "access_token": "your_access_token",
     "export_dir": "your_export_dir",
@@ -32,7 +31,6 @@ Create a `.chatgpt_tool` folder in your user directory and create a `config.json
 
 where:
 
-- `proxy` is the proxy that you should set according to your proxy configuration, e.g., socks5h://localhost:38888.
 - `model` is the model to use, and `gpt-3.5-turbo` is recommended.
 - `access_token` is your token, which can be obtained from [here](https://chat.openai.com/api/auth/session).
 - `export_dir` is the directory to export the conversations.

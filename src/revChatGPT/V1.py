@@ -100,12 +100,11 @@ class Chatbot:
         """Initialize a chatbot
 
         Args:
-            config (dict[str, str]): Login and proxy info. Example:
+            config (dict[str, str]): Login info. Example:
                 {
                     "email": "OpenAI account email",
                     "password": "OpenAI account password",
                     "access_token": "<access_token>"
-                    "proxy": "<proxy_url_string>",
                     "paid": True/False, # whether this is a plus account
                 }
                 More details on these are available at https://github.com/acheong08/ChatGPT#configuration
@@ -141,23 +140,6 @@ class Chatbot:
                 cached_access_token = None
             if cached_access_token is not None:
                 self.config["access_token"] = cached_access_token
-
-        if "proxy" in config:
-            if not isinstance(config["proxy"], str):
-                error = TypeError("Proxy must be a string!")
-                raise error
-            proxies = {
-                "http": config["proxy"],
-                "https": config["proxy"],
-            }
-            if isinstance(self.session, AsyncClient):
-                proxies = {
-                    "http://": config["proxy"],
-                    "https://": config["proxy"],
-                }
-                self.session = AsyncClient(proxies=proxies)  # type: ignore
-            else:
-                self.session.proxies.update(proxies)
 
         self.conversation_id = conversation_id
         self.parent_id = parent_id
@@ -328,7 +310,6 @@ class Chatbot:
         auth = Authenticator(
             email_address=self.config.get("email"),
             password=self.config.get("password"),
-            proxy=self.config.get("proxy"),
         )
         log.debug("Using authenticator to get access token")
         auth.begin()
