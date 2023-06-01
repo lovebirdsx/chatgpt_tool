@@ -343,18 +343,18 @@ def main(config: dict) -> None:
         print(f'Conversation title successfully changed to {C.OKCYAN}{title}{C.ENDC}.')
 
     commands = Commands()
-    commands.add('!new', 'Start new conversation', new_conversation)
-    commands.add('!change_title', 'Change the title of the current conversation', change_title)
-    commands.add('!set_conversation', 'P1: cid. Set the current conversation to cid', set_conversation)
-    commands.add('!show_msgs', 'Show all messages in the current conversation', show_msgs)
-    commands.add('!rollback', 'P1: n, Rollback n messages', rollback)
-    commands.add('!conversations', 'List all conversations', list_conversations)
-    commands.add('!export', 'P1: cid, export conversation', export_conversation)
-    commands.add('!export_all', 'export all conversations', export_all_conversations)
-    commands.add('!delete', 'P1: sid. Delete conversation with sid or current conversation', delete_conversation)
-    commands.add('!delete_all', 'Delete all conversations', delete_all_conversations)
-    commands.add('!delete_none_title', 'Delete all conversations without title', delete_none_title_conversations)
-    commands.add('!config', 'Show config', show_config)
+    commands.add('.new', 'Start new conversation', new_conversation)
+    commands.add('.change_title', 'Change the title of the current conversation', change_title)
+    commands.add('.set_conversation', 'P1: cid. Set the current conversation to cid', set_conversation)
+    commands.add('.show_msgs', 'Show all messages in the current conversation', show_msgs)
+    commands.add('.rollback', 'P1: n, Rollback n messages', rollback)
+    commands.add('.conversations', 'List all conversations', list_conversations)
+    commands.add('.export', 'P1: cid, export conversation', export_conversation)
+    commands.add('.export_all', 'export all conversations', export_all_conversations)
+    commands.add('.delete', 'P1: sid. Delete conversation with sid or current conversation', delete_conversation)
+    commands.add('.delete_all', 'Delete all conversations', delete_all_conversations)
+    commands.add('.delete_none_title', 'Delete all conversations without title', delete_none_title_conversations)
+    commands.add('.config', 'Show config', show_config)
 
     conversation_id = save.get('conversation_id')
     if conversation_id:
@@ -437,7 +437,7 @@ def load_cmd_config() -> dict:
 WELCOME_MESSAGE = f'''
 {C.OKGREEN}ChatGPT Command Tool{C.ENDC} (https://chat.openai.com/chat)
 
-{C.OKCYAN}!help{C.ENDC}       Show All Commands
+{C.OKCYAN}.help{C.ENDC}       Show All Commands
 {C.OKCYAN}Esc, Enter{C.ENDC}  Send message / Execute command
 {C.OKCYAN}Alt+Enter{C.ENDC}   Send message / Execute command
 '''

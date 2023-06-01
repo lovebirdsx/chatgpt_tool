@@ -14,7 +14,7 @@ class CommandItem:
 class Commands:
     def __init__(self):
         self.commands = []
-        self.add('!help', 'Show this message', lambda _: print(self.get_help()))
+        self.add('.help', 'Show this message', lambda _: print(self.get_help()))
 
     def add(self, name: str, help: str, func: Callable[..., object]):
         self.commands.append(CommandItem(name, help, func))
@@ -27,7 +27,7 @@ class Commands:
 
     def handle(self, command: str) -> bool:
         command = command.strip()
-        if command.startswith('!'):
+        if command.startswith('.'):
             command = command.lower()
 
         args = command.split(' ')
