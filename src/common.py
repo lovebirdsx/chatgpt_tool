@@ -3,6 +3,7 @@ import re
 
 GPT_MODELS = {
     '3.5': 'text-davinci-002-render-sha',
+    '3.5p': 'text-davinci-002-render-paid',
     '4': 'gpt-4',
 }
 

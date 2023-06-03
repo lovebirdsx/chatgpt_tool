@@ -16,6 +16,7 @@ DEFAULT_CONFIG = {
     'model': GPT_MODELS['3.5'],
     'language': 'chinese',
     'access_token': 'open https://chat.openai.com/api/auth/session to get your access_token',
+    'paid': False,
     'export_dir': get_save_path() + '/export',
 }
 

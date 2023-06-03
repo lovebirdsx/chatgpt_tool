@@ -22,7 +22,7 @@
 
 ```json
 {
-    "model": "gpt-3.5-turbo",
+    "model": "text-davinci-002-render-sha",
     "access_token": "your_access_token",
     "export_dir": "your_export_dir",
     "language": "chinese",
@@ -31,7 +31,7 @@
 
 其中：
 
-- `model`是模型，推荐`gpt-3.5-turbo`
+- `model`是模型，默认为`text-davinci-002-render-sha`
 - `access_token`是你的令牌，可以在[这里](https://chat.openai.com/api/auth/session)获得
 - `export_dir`是导出对话的目录
 - `language`是用来做代码审查和解释的语言

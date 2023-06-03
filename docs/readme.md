@@ -22,7 +22,7 @@ Create a `.chatgpt_tool` folder in your user directory and create a `config.json
 
 ```json
 {
-    "model": "gpt-3.5-turbo",
+    "model": "text-davinci-002-render-sha",
     "access_token": "your_access_token",
     "export_dir": "your_export_dir",
     "language": "chinese"
@@ -31,7 +31,7 @@ Create a `.chatgpt_tool` folder in your user directory and create a `config.json
 
 where:
 
-- `model` is the model to use, and `gpt-3.5-turbo` is recommended.
+- `model` is the model to use, default to `text-davinci-002-render-sha`.
 - `access_token` is your token, which can be obtained from [here](https://chat.openai.com/api/auth/session).
 - `export_dir` is the directory to export the conversations.
 - `language` is the language to do code review and explanation

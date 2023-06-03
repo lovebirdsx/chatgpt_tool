@@ -131,6 +131,8 @@ def main(config: dict) -> None:
 
     def new_conversation(args: list[str]):
         chatbot.reset_chat()
+        save.set('conversation_id', None)
+        save.save()
         print(f'{C.OKCYAN}New conversation started.{C.ENDC}')
 
     @try_chatbot
@@ -152,6 +154,18 @@ def main(config: dict) -> None:
             else:
                 print(f'{i:<3}: {C.OKCYAN}{title}{C.ENDC}')
     
+    def set_model(args: list[str]):
+        if len(args) == 2:
+            model = args[1]
+            if model not in GPT_MODELS:
+                print(f'{C.WARNING}Invalid mode.{C.ENDC}')
+                return
+            config['model'] = GPT_MODELS[model]
+            print(f'Model set to {C.WARNING}{GPT_MODELS[model]}.{C.ENDC}')
+        else:
+            print(f'{C.WARNING}Invalid arguments.{C.ENDC}')
+            print(f'Usage: .set_model <model>, model in {C.HEADER}{", ".join(GPT_MODELS.keys())}{C.ENDC}')
+
     def export_conversation(args: list[str]):
         cache = get_conversation_cache(chatbot)
         if len(args) == 2:
@@ -236,18 +250,6 @@ def main(config: dict) -> None:
         chatbot.conversation_id = None
         save.set('conversation_id', None)
         save.save()
-
-    def rollback(args: list[str]):
-        if chatbot.conversation_id is None:
-            print(f'{C.WARNING}No conversation to rollback.{C.ENDC}')
-            return
-
-        try:
-            rollback = int(args[1])
-        except IndexError:
-            rollback = 1
-        chatbot.rollback_conversation(rollback)
-        print(f'Rolled back {rollback} messages.')
     
     def set_conversation(args: list[str]):
         try:
@@ -344,27 +346,32 @@ def main(config: dict) -> None:
 
     commands = Commands()
     commands.add('.new', 'Start new conversation', new_conversation)
-    commands.add('.change_title', 'Change the title of the current conversation', change_title)
-    commands.add('.set_conversation', 'P1: cid. Set the current conversation to cid', set_conversation)
-    commands.add('.show_msgs', 'Show all messages in the current conversation', show_msgs)
-    commands.add('.rollback', 'P1: n, Rollback n messages', rollback)
+    commands.add('.exit', 'Exit command line', exit)
+    commands.add('.title', 'Change the title of the current conversation', change_title)
+    commands.add('.set_conversation', f'{C.HEADER}P1: cid{C.ENDC}. Set the current conversation to cid', set_conversation)
+    commands.add('.messages', 'Show all messages in the current conversation', show_msgs)
     commands.add('.conversations', 'List all conversations', list_conversations)
-    commands.add('.export', 'P1: cid, export conversation', export_conversation)
+    commands.add('.set_model', f'{C.HEADER}P1: model{C.ENDC}. Set model, valid models: {C.HEADER}{", ".join(GPT_MODELS.keys())}{C.ENDC}', set_model)
+    commands.add('.export', f'{C.HEADER}P1: cid{C.ENDC}, export conversation', export_conversation)
     commands.add('.export_all', 'export all conversations', export_all_conversations)
-    commands.add('.delete', 'P1: sid. Delete conversation with sid or current conversation', delete_conversation)
+    commands.add('.delete', f'{C.HEADER}[P1: cid]{C.ENDC}. Delete conversation(current or cid)', delete_conversation)
     commands.add('.delete_all', 'Delete all conversations', delete_all_conversations)
-    commands.add('.delete_none_title', 'Delete all conversations without title', delete_none_title_conversations)
+    commands.add('.delete_none_title', f'Delete all conversations with title {C.OKCYAN}New Chat{C.ENDC}', delete_none_title_conversations)
     commands.add('.config', 'Show config', show_config)
 
     conversation_id = save.get('conversation_id')
     if conversation_id:
         try:
             if chatbot.get_msg_history(conversation_id):
-                chatbot.conversation_id = conversation_id
+                chatbot.conversation_id = conversation_id                
             show_msgs([])
         except Exception:
             save.set('conversation_id', None)
             save.save()
+    
+    if save.get('conversation_id') is None:
+        list_conversations([])
+        print()
 
     run_cli(chatbot, commands)
 
@@ -417,8 +424,8 @@ def ask(chatbot: Chatbot, prompt):
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Chatgpt Command Line Tool')
-    parser.add_argument('-m', '--mode', type=str, default='3.5',
-                        help='gpt mode, 3.5 or 4, default 3.5')
+    parser.add_argument('-m', '--model', type=str, default='3.5',
+                        help='gpt model, 3.5 or 4, default 3.5')
     parser.add_argument('-cfg', '--config', help='config file path')
 
     return parser.parse_args()
@@ -427,18 +434,15 @@ def parse_args() -> argparse.Namespace:
 def load_cmd_config() -> dict:
     args = parse_args()
     config = load_config(args.config)
-    if args.mode == '3.5' or not args.mode:
-        config['model'] = GPT_MODELS['3.5']
-    elif args.mode == '4':
-        config['model'] = GPT_MODELS['4']
+    if args.model in GPT_MODELS:
+        config['model'] = GPT_MODELS[args.model]
     return config
 
 
 WELCOME_MESSAGE = f'''
-{C.OKGREEN}ChatGPT Command Tool{C.ENDC} (https://chat.openai.com/chat)
+{C.OKGREEN}ChatGPT Command Tool{C.ENDC}
 
 {C.OKCYAN}.help{C.ENDC}       Show All Commands
-{C.OKCYAN}Esc, Enter{C.ENDC}  Send message / Execute command
 {C.OKCYAN}Alt+Enter{C.ENDC}   Send message / Execute command
 '''
 
