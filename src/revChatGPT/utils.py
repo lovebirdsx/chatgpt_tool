@@ -29,7 +29,7 @@ def create_session() -> PromptSession:
 
 
 def create_completer(commands: list, pattern_str: str = "$") -> WordCompleter:
-    return WordCompleter(words=commands, pattern=re.compile(pattern_str))
+    return WordCompleter(words=commands, pattern=re.compile(pattern_str), match_middle=True, ignore_case=True)
 
 
 def get_input(

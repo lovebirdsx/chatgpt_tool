@@ -145,7 +145,7 @@ class Exporter:
         return to_valid_filename(title) + '.md'
     
     def __filename_to_title(self, filename: str) -> str:
-        return os.path.splitext(os.path.basename(filename))[0].lower()
+        return os.path.splitext(os.path.basename(filename))[0]
 
     def __get_path(self, title: str) -> str:
         return os.path.join(self.root, self.__title_to_filename(title))
