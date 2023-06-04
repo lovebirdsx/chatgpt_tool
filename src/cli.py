@@ -180,7 +180,7 @@ def main(config: dict) -> None:
     exporter = Exporter(config['export_dir'])
 
     def shortcuts(args: list[str]):
-        print_md(SHORTCUTS_HELP)
+        print(SHORTCUTS_HELP)
 
     def new_conversation(args: list[str]):
         chatbot.reset_chat()
