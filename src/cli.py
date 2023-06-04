@@ -9,6 +9,7 @@ from rich.live import Live
 from rich.markdown import Markdown
 
 from typing import Callable
+from cli_help import SHORTCUTS_HELP
 
 from revChatGPT.V1 import Chatbot
 from revChatGPT.utils import create_session, create_completer, get_input
@@ -48,6 +49,8 @@ def try_chatbot(func: Callable[..., object]) -> Callable[..., object]:
     return wrapper
 
 def print_md(msg, **kwargs):
+    msg = msg.replace('You:', f'{C.OKBLUE}You:{C.ENDC}')
+    msg = msg.replace('ChatGPT:', f'{C.OKGREEN}ChatGPT:{C.ENDC}')
     print_rich(Markdown(msg), **kwargs)
 
 
@@ -99,7 +102,6 @@ def check_export_dir(config: dict) -> bool:
         raise Exception(f'export_dir: {export_dir} is not a directory')
     return True
 
-
 def save_conversation(chatbot: Chatbot, cid: str, title: str, path: str) -> None:
     history = get_history(chatbot, cid)
     mapping = history['mapping'] # type: ignore
@@ -122,12 +124,63 @@ def save_conversation(chatbot: Chatbot, cid: str, title: str, path: str) -> None
     print(f'Save to: {os.path.normpath(path)}')
 
 
+class Exporter:
+    def __init__(self, root: str) -> None:
+        self.root = root
+        self.conversations = [self.__filename_to_title(f) for f in os.listdir(self.root) if os.path.isfile(os.path.join(self.root, f))]
+    
+    def export_conversation(self, chatbot: Chatbot, cid: str, title: str) -> None:
+        path = self.__get_path(title)
+        if os.path.exists(path):
+            print(f'{C.WARNING}Conversation {title} already exists, will be overwritten{C.ENDC}')
+
+        save_conversation(chatbot, cid, to_valid_filename(title), path)
+    
+    def export_all_conversations(self, chatbot: Chatbot) -> None:
+        cache = get_conversation_cache(chatbot)
+        for index in range(len(cache)):
+            self.export_conversation(chatbot, cache.get_cid(index), cache.get_title(index))
+    
+    def __title_to_filename(self, title: str) -> str:
+        return to_valid_filename(title) + '.md'
+    
+    def __filename_to_title(self, filename: str) -> str:
+        return os.path.splitext(os.path.basename(filename))[0].lower()
+
+    def __get_path(self, title: str) -> str:
+        return os.path.join(self.root, self.__title_to_filename(title))
+    
+    @property
+    def all_titles(self) -> list[str]:
+        return [os.path.splitext(os.path.basename(f))[0] for f in self.conversations]
+    
+    def has_conversation(self, title: str) -> bool:
+        return title in self.conversations
+
+    def print_conversation(self, titile: str) -> None:
+        path = self.__get_path(titile)
+        if path is None:
+            print(f'{C.WARNING}Conversation {titile} not found{C.ENDC}')
+        else:
+            with open(path, 'r', encoding='utf8') as f:
+                print_md(f.read())
+        print()
+        
+
 def main(config: dict) -> None:
+    if not check_export_dir(config):
+        return
+
     chatbot = Chatbot(
         config,
         conversation_id=config.get('conversation_id'),
         parent_id=config.get('parent_id'),
     )
+
+    exporter = Exporter(config['export_dir'])
+
+    def shortcuts(args: list[str]):
+        print_md(SHORTCUTS_HELP)
 
     def new_conversation(args: list[str]):
         chatbot.reset_chat()
@@ -189,21 +242,11 @@ def main(config: dict) -> None:
                 print(f'{C.WARNING}No conversation to export.{C.ENDC}')
                 return
             index = cache.get_index(conversation_id)
-
-        if not check_export_dir(config):
-            return
         
-        save_path = f'{config.get("export_dir")}/{to_valid_filename(cache.get_title(index))}.md'
-        save_conversation(chatbot, conversation_id, cache.get_title(index), save_path)
+        exporter.export_conversation(chatbot, conversation_id, cache.get_title(index))
 
     def export_all_conversations(args: list[str]):
-        if not check_export_dir(config):
-            return
-
-        cache = get_conversation_cache(chatbot)
-        for index in range(len(cache)):
-            save_path = f'{config.get("export_dir")}/{to_valid_filename(cache.get_title(index))}.md'
-            save_conversation(chatbot, cache.get_cid(index), cache.get_title(index), save_path)
+        exporter.export_all_conversations(chatbot)
 
     @try_chatbot
     def delete_conversation(args: list[str]):
@@ -345,6 +388,7 @@ def main(config: dict) -> None:
         print(f'Conversation title successfully changed to {C.OKCYAN}{title}{C.ENDC}.')
 
     commands = Commands()
+    commands.add('.shortcuts', 'Show short cuts', shortcuts)
     commands.add('.new', 'Start new conversation', new_conversation)
     commands.add('.exit', 'Exit command line', exit)
     commands.add('.title', 'Change the title of the current conversation', change_title)
@@ -373,17 +417,24 @@ def main(config: dict) -> None:
         list_conversations([])
         print()
 
-    run_cli(chatbot, commands)
+    run_cli(chatbot, exporter, commands)
 
 
-def run_cli(chatbot: Chatbot, commands: Commands):
+def run_cli(chatbot: Chatbot, exporter: Exporter, commands: Commands):
     session = create_session()
-    completer = create_completer(commands.get_names())
+    completer1 = create_completer(commands.names + exporter.all_titles)
+    completer2 = create_completer(commands.names)
     try:
         while True:
             print(f'{C.OKBLUE + C.BOLD}You: {C.ENDC}')
 
+            completer = completer1 if chatbot.conversation_id is None else completer2
             prompt = get_input(session=session, completer=completer)
+            if chatbot.conversation_id is None:
+                if exporter.has_conversation(prompt):
+                    exporter.print_conversation(prompt)
+                    continue
+
             if commands.handle(prompt):
                 print()
                 continue
@@ -450,8 +501,6 @@ if __name__ == '__main__':
     config = load_cmd_config()
 
     print(WELCOME_MESSAGE)
-
-    
     print(f'Model: {C.WARNING}{config["model"]}{C.ENDC}')
     print()
 

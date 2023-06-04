@@ -22,7 +22,8 @@ class Commands:
     def get_help(self) -> str:
         return '\n'.join([f'{C.OKCYAN}{item.name:<20}{C.ENDC}{item.help}' for item in self.commands])
 
-    def get_names(self) -> list[str]:
+    @property
+    def names(self) -> list[str]:
         return [item.name for item in self.commands]
 
     def handle(self, command: str) -> bool:
