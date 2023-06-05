@@ -179,7 +179,7 @@ def main(config: dict) -> None:
 
     exporter = Exporter(config['export_dir'])
 
-    def shortcuts(args: list[str]):
+    def show_shortcuts(args: list[str]):
         print(SHORTCUTS_HELP)
 
     def new_conversation(args: list[str]):
@@ -388,20 +388,20 @@ def main(config: dict) -> None:
         print(f'Conversation title successfully changed to {C.OKCYAN}{title}{C.ENDC}.')
 
     commands = Commands()
-    commands.add('.shortcuts', 'Show short cuts', shortcuts)
+    commands.add('.show_shortcuts', 'Show short cuts', show_shortcuts)
     commands.add('.new', 'Start new conversation', new_conversation)
     commands.add('.exit', 'Exit command line', exit)
-    commands.add('.title', 'Change the title of the current conversation', change_title)
+    commands.add('.change_title', 'Change the title of the current conversation', change_title)
     commands.add('.set_conversation', f'{C.HEADER}P1: cid{C.ENDC}. Set the current conversation to cid', set_conversation)
-    commands.add('.messages', 'Show all messages in the current conversation', show_msgs)
-    commands.add('.conversations', 'List all conversations', list_conversations)
+    commands.add('.show_messages', 'Show all messages in the current conversation', show_msgs)
+    commands.add('.show_conversations', 'List all conversations', list_conversations)
     commands.add('.set_model', f'{C.HEADER}P1: model{C.ENDC}. Set model, valid models: {C.HEADER}{", ".join(GPT_MODELS.keys())}{C.ENDC}', set_model)
     commands.add('.export', f'{C.HEADER}P1: cid{C.ENDC}, export conversation', export_conversation)
     commands.add('.export_all', 'export all conversations', export_all_conversations)
     commands.add('.delete', f'{C.HEADER}[P1: cid]{C.ENDC}. Delete conversation(current or cid)', delete_conversation)
     commands.add('.delete_all', 'Delete all conversations', delete_all_conversations)
     commands.add('.delete_none_title', f'Delete all conversations with title {C.OKCYAN}New Chat{C.ENDC}', delete_none_title_conversations)
-    commands.add('.config', 'Show config', show_config)
+    commands.add('.show_config', 'Show config', show_config)
 
     conversation_id = save.get('conversation_id')
     if conversation_id:
