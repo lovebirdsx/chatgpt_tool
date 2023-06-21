@@ -31,8 +31,7 @@ def load_config(path = None) -> dict:
     
     with open(path, 'r') as f:
         content = replace_env_variables(f.read())
-        return json.loads(content)
-
-
-def get_language() -> str:
-    return load_config().get('language') or DEFAULT_CONFIG['language']
+        result = json.loads(content)
+        if 'language' not in result:
+            result['language'] = 'chinese'
+        return result

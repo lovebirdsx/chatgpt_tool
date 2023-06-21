@@ -3,8 +3,6 @@ import tiktoken
 
 from revChatGPT.V1 import Chatbot
 
-from app import load_config
-
 TRUNK_TOKEN_SIZE = 2800
 TRUNK_STR_SIZE = 11500
 MAX_ASK_RETRY_COUNT = 10
@@ -65,10 +63,10 @@ def ask(bot: Chatbot, prompt_prefix: str, code: str, log_prefix = '') -> str:
     raise AskTimeoutException(f'The number of retries has exceeded the limit {MAX_ASK_RETRY_COUNT}')
 
 class Prompt:
-    def __init__(self, trunk_first, trunk_next, sumarize_muti, sumarize_single) -> None:
+    def __init__(self, trunk_first, trunk_next, sumarize_multi, sumarize_single) -> None:
         self.trunk_first = trunk_first
         self.trunk_next = trunk_next
-        self.sumarize_muti = sumarize_muti
+        self.sumarize_multi = sumarize_multi
         self.sumarize_single = sumarize_single
 
 def ask_for_content(bot: Chatbot, content: str, prompt: Prompt) -> list[str]:
@@ -85,7 +83,7 @@ def ask_for_content(bot: Chatbot, content: str, prompt: Prompt) -> list[str]:
             texts.append(trunk_response)
             result.append( trunk_response)
 
-        final_response = ask(bot, prompt.sumarize_muti, '\n'.join(texts))
+        final_response = ask(bot, prompt.sumarize_multi, '\n'.join(texts))
         result.append(final_response)
     else:
         result.append(ask(bot, prompt.sumarize_single, content))

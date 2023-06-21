@@ -30,13 +30,15 @@ def to_valid_filename(s):
 
 
 def replace_env_variables(json_string):
-     pattern = r"\$\{(\w+)\}"
+    pattern = r"\$\{(\w+)\}"
 
-     def replace(match):
-         env_var = match.group(1)
-         env_value = os.environ.get(env_var)
-         env_value = env_value.replace('\\', '/')
-         return env_value if env_value else match.group()
-     
-     updated_json_string = re.sub(pattern, replace, json_string)
-     return updated_json_string
+    def replace(match):
+        env_var = match.group(1)
+        env_value = os.environ.get(env_var)
+        if not env_value:
+            raise Exception(f'Environment variable {env_var} not found.')
+        env_value = env_value.replace('\\', '/')
+        return env_value if env_value else match.group()
+    
+    updated_json_string = re.sub(pattern, replace, json_string)
+    return updated_json_string

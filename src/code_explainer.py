@@ -1,37 +1,36 @@
 import argparse
 
-from app import get_language, load_config
+from app import load_config
 from cache import Cache
 from asker import Prompt, do_ask_for_large_file_cmd
 from common import open_file
 
-LANGUAGE = get_language()
-
-TRUNK_PROMPT_FIRST = f'''The code I sent you is a part of a code file.
-Please help me generate a summary. include the most unique and helpful points.
-no need to include all the details. 300 words or less. Reply in {LANGUAGE}:'''
-
-TRUNK_PROMPT_NEXT = f'''The following code is a follow-up to the code I sent you before,
-Please help me generate a summary. include the most unique and helpful points.
-no need to include all the details. 300 words or less. Reply in {LANGUAGE}:'''
-
-SUMARIZE_MUTI_PROMPT = f'''The following content is a summary of different parts of the same code file.
-Please summarize them with the most unique and helpful points, into a list of key points and takeaways.
-Reply in {LANGUAGE}:'''
-
-SUMARIZE_SINGLE_PROMPT = f'''The texts I send to you are all come form the same code file,
-Summarize them with the most unique and helpful points,
-into a list of key points and takeaways. Reply in {LANGUAGE}:'''
 
 PROG_NAME = 'code_explainer'
 DESC = 'Code explainer used to generate code explanations and assist code reading'
 
-def create_prompt() -> Prompt:
+def create_prompt(lan) -> Prompt:
+    first = f'''The code I sent you is a part of a code file.
+Please help me generate a summary. include the most unique and helpful points.
+no need to include all the details. 300 words or less. Reply in {lan}:'''
+
+    next = f'''The following code is a follow-up to the code I sent you before,
+Please help me generate a summary. include the most unique and helpful points.
+no need to include all the details. 300 words or less. Reply in {lan}:'''
+
+    multi_prompt = f'''The following content is a summary of different parts of the same code file.
+Please summarize them with the most unique and helpful points, into a list of key points and takeaways.
+Reply in {lan}:'''
+
+    single_prompt = f'''The texts I send to you are all come form the same code file,
+Summarize them with the most unique and helpful points,
+into a list of key points and takeaways. Reply in {lan}:'''
+
     return Prompt(
-        TRUNK_PROMPT_FIRST,
-        TRUNK_PROMPT_NEXT,
-        SUMARIZE_MUTI_PROMPT,
-        SUMARIZE_SINGLE_PROMPT
+        first,
+        next,
+        multi_prompt,
+        single_prompt
     )
 
 def create_args_parser() -> argparse.ArgumentParser:
@@ -69,9 +68,9 @@ if __name__ == '__main__':
             open_file(cache.get_cache_path(args.file))
             exit(0)
 
-    prompt = create_prompt()
     if args.file:
         config = load_config(args.config)
+        prompt = create_prompt(config['language'])
         result = do_ask_for_large_file_cmd(args.file, prompt, config)
         if not result:
             exit(1)

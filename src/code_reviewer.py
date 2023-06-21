@@ -1,27 +1,9 @@
 import argparse
 import os
 from git.repo import Repo
-from app import get_language, get_save_path, load_config
+from app import get_save_path, load_config
 from asker import Prompt, do_ask_for_large_file_cmd
 from common import open_file, write_file
-
-LANGUAGE = get_language()
-
-TRUNK_PROMPT_FIRST = f'''The content I sent you is a part of a code patch.
-please help me do a brief code review. If any bug risk and improvement suggestion are welcome.
-Reply in {LANGUAGE}:'''
-
-TRUNK_PROMPT_NEXT = f'''Please continue to do code view.
-If any bug risk and improvement suggestion are welcome. Reply in {LANGUAGE}:'''
-
-SUMARIZE_MUTI_PROMPT = f'''The following content is code reviews of different parts of the same code patch.
-First, please summarize them with the most unique and helpful points, into a list of key points and takeaways.
-Then, please provide a commit message 30 words or less. Please reply in {LANGUAGE}:'''
-
-SUMARIZE_SINGLE_PROMPT = f'''Bellow is the code patch, First, please help me do a brief code review,
-If any bug risk and improvement suggestion are welcome. 
-Then, please provide a commit message 30 words or less.
-Please reply in {LANGUAGE}:'''
 
 PROG_NAME = 'code_reviewer'
 DESC = '''A code reviewer used to generate code review
@@ -30,13 +12,24 @@ DESC = '''A code reviewer used to generate code review
 * Generate the submission information of this review
 '''
 
-def create_prompt() -> Prompt:
-    return Prompt(
-        TRUNK_PROMPT_FIRST,
-        TRUNK_PROMPT_NEXT,
-        SUMARIZE_MUTI_PROMPT,
-        SUMARIZE_SINGLE_PROMPT
-    )
+def create_prompt(lan: str) -> Prompt:
+    first = f'''The content I sent you is a part of a code patch.
+please help me do a brief code review. If any bug risk and improvement suggestion are welcome.
+Reply in {lan}:'''
+
+    next = f'''Please continue to do code view.
+If any bug risk and improvement suggestion are welcome. Reply in {lan}:'''
+
+    sumarize_multi = f'''The following content is code reviews of different parts of the same code patch.
+First, please summarize them with the most unique and helpful points, into a list of key points and takeaways.
+Then, please provide a commit message 30 words or less. Please reply in {lan}:'''
+
+    sumarize_single = f'''Bellow is the code patch, First, please help me do a brief code review,
+If any bug risk and improvement suggestion are welcome. 
+Then, please provide a commit message 30 words or less.
+Please reply in {lan}:'''
+
+    return Prompt(first, next, sumarize_multi, sumarize_single)
 
 def create_args_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=DESC)
@@ -92,13 +85,13 @@ if __name__ == '__main__':
     if not file:
         print(parser.format_help())
         exit(0)
-
+    
     repo = Repo(os.path.dirname(file), search_parent_directories=True)
     patch_path = gen_patch(repo, file)
     print(f'Generated patch file [{patch_path}]')
 
-    prompt = create_prompt()
     config = load_config(args.config)
+    prompt = create_prompt(config['language'])
     result = do_ask_for_large_file_cmd(patch_path, prompt, config)
     
     review_header = gen_review_header(repo)
