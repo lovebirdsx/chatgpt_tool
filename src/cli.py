@@ -310,6 +310,8 @@ def main(config: dict) -> None:
             show_msgs([])
         except IndexError:
             print(f'{C.WARNING}Invalid index.{C.ENDC}')
+        except Exception as e:
+            print(f'{C.WARNING}{e}{C.ENDC}')
 
     @try_chatbot
     def show_msgs(args: list[str]):
