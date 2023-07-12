@@ -197,3 +197,5 @@ class Colors:
             Colors.ENDC = ""
             Colors.BOLD = ""
             Colors.UNDERLINE = ""
+
+C = Colors()

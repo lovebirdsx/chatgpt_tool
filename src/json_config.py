@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 
 from app import get_save_path
@@ -22,7 +21,6 @@ class JsonConfig:
         try:
             with open(self.path, 'r', encoding='utf8') as f:
                 self.config = json.load(f)
-            logging.info(f'Config load from {self.path}.')
         except FileNotFoundError:
             pass
 

@@ -18,6 +18,7 @@ DEFAULT_CONFIG = {
     'access_token': 'open https://chat.openai.com/api/auth/session to get your access_token',
     'paid': False,
     'export_dir': get_save_path() + '/export',
+    'auto_export': True,
 }
 
 
@@ -32,6 +33,10 @@ def load_config(path = None) -> dict:
     with open(path, 'r') as f:
         content = replace_env_variables(f.read())
         result = json.loads(content)
-        if 'language' not in result:
-            result['language'] = 'chinese'
+
+        # fill in default values
+        for key, value in DEFAULT_CONFIG.items():
+            if key not in result:
+                result[key] = value
+        
         return result

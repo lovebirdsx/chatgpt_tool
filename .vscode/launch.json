@@ -68,7 +68,7 @@
             "cwd": "${workspaceFolder}/src",
             "args": [
                 "--mode", "3.5",
-                "--config", "${env:S}/chatgpt_config.json",
+                "--config", "${env:HOME}/git_project/me/config/chatgpt_config.json",
             ]
         }
     ]
