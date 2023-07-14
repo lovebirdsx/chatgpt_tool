@@ -83,7 +83,7 @@ class ChatbotCli:
 
         if self.__config.get('auto_export'):
             title = cache.get_title(cache.get_index(self.__chatbot.conversation_id))
-            self.__exporter.export(self.__chatbot.conversation_id, title, force=False)
+            self.__exporter.export(self.__chatbot.conversation_id, title)
 
     def __check_export_dir(self) -> bool:
         export_dir = self.__config.get('export_dir')
