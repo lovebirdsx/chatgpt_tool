@@ -34,7 +34,7 @@ class JsonConfig:
             os.makedirs(dir_path)
 
         with open(self.path, 'w', encoding='utf8') as file:
-            json.dump(self.config, file)
+            json.dump(self.config, file, indent=2)
         self.is_dirty = False
 
     def get(self, key):
